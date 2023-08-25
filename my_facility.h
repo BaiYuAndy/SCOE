@@ -62,6 +62,16 @@ class window{
 			return renderer;
 		
 		}
+
+		SDL_Renderer* getWindow(){
+			//SDL_Window *pWindow = NULL;
+			pWindow = SDL_CreateWindow(str,SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,winRect.w,winRect.h,0);
+
+			//SDL_Renderer *renderer = SDL_CreateRenderer(pWindow, -1, SDL_RENDERER_ACCELERATED);
+			renderer = SDL_CreateRenderer(pWindow, -1, SDL_RENDERER_ACCELERATED);
+
+			return renderer;
+		}
 		
 		window(){
 			
@@ -108,11 +118,13 @@ public:
 	int moveCount;
 	int downCount;
 
-	void getLoadBitmap(const char *image_path){
+	SDL_Surface * getLoadBitmap(const char *image_path){
 		imageSurface = SDL_LoadBMP(image_path);
 		
 		this->width = imageSurface->w;
 		this->high = imageSurface->h;
+
+		return imageSurface;
 	}
 	
 	int loadJpg(const char *image_path){
