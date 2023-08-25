@@ -1,59 +1,175 @@
 #include "my_facility.h"
 
-int main(){
-	
-	SDL_Rect loadPictureRect;
+#define WIDTH 600
+#define HIGH 600
 
-	SDL_Renderer *mainRenderer;
+int main(int argc, char *argv[])
+{
+// returns zero on success else non-zero
+    if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+        printf("error initializing SDL: %s\n", SDL_GetError());
+    }
 
-	Image background;
+    Image background;
+    background.getLoadBitmap("res//background.bmp");
 
-	window win;
+    window pWin;
 
-	win.str = "my win";
-	
-	background.getLoadBitmap("res//background.bmp");
-	
-	background.width =(background.width/10)*10;
-	background.high = (background.high/10)*10;
-	
-	win.winRect.w = background.width/4;
-	win.winRect.h = background.high;
-	mainRenderer = win.drawWindow();
-	
-	loadPictureRect.x = 0;
-	loadPictureRect.y = 0;
-	
-	loadPictureRect.w = win.winRect.w;
-	loadPictureRect.h = win.winRect.h;
-	
-	background.drawBitmap(mainRenderer,loadPictureRect,win.winRect);
+    pWin.winRect.w = WIDTH;//background.width/3;
+    pWin.winRect.h = HIGH;//background.high;
 
-	//
-	bool quit = false;
-	SDL_Event event;
-	//
+    //pWin.getWindow();
 
-	while(!quit){
-		while (SDL_PollEvent(&event)) {
-		
-				switch (event.type) {
-				
-				case SDL_QUIT:
-					quit = true;
-					
-					//SDL_RemoveTimer(updateBackgroundTimer);
-					
-				break;
-			}
-		}
-	}
-	
-	background.~Image();
-	//enemy.~ImageSecond();
-	//actor.~ImageFirst();
-	win.~window();
+    /*SDL_Window* win = SDL_CreateWindow("GAME", // creates a window
+                 		               SDL_WINDOWPOS_CENTERED,
+                                       SDL_WINDOWPOS_CENTERED,
+                                       1000, 1000, 0);*/
+ 
+    // triggers the program that controls
+    // your graphics hardware and sets flags
+    Uint32 render_flags = SDL_RENDERER_ACCELERATED;
+ 
+    // creates a renderer to render our images
+    SDL_Renderer* rend = pWin.getWindow();//SDL_CreateRenderer(win, -1, render_flags);
+ 
+    // creates a surface to load an image into the main memory
+    SDL_Surface* surface;
 
-	return 0;
+     // please provide a path for your image
+    surface = SDL_LoadBMP("res//actor//1.bmp");
+
+    // loads image to our graphics hardware memory.
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(rend, surface);
+ 
+    // clears main-memory
+    SDL_FreeSurface(surface);
+ 
+    // let us control our image position
+    // so that we can move it with our keyboard.
+    SDL_Rect dest;
+ 
+    // connects our texture with dest to control position
+    SDL_QueryTexture(tex, NULL, NULL, &dest.w, &dest.h);
+ 
+    // adjust height and width of our image box.
+    //dest.w ;
+    //dest.h ;
+ 
+    // sets initial x-position of object
+    dest.x = (WIDTH - dest.w) / 2;
+ 
+    // sets initial y-position of object
+    dest.y = (HIGH - dest.h) / 2;
+ 
+    // controls animation loop
+    int close = 0;
+ 
+    // speed of box
+    int speed = 300;
+ 	
+    //
+    SDL_Surface* imageSurface;
+
+    imageSurface = SDL_LoadBMP("res//background.bmp");
+    SDL_Texture* BlueShapes = SDL_CreateTextureFromSurface(rend, imageSurface);
+
+
+    SDL_Rect ImageRect;
+	ImageRect.x=0;
+	ImageRect.y=0;
+	ImageRect.w = imageSurface->w;
+	ImageRect.h = imageSurface->h;
+	// connects our texture with dest to control position
+    SDL_QueryTexture(BlueShapes, NULL, NULL, &ImageRect.w, &ImageRect.h);
+    // clears the screen
+       //SDL_RenderClear(rend);
+	SDL_RenderCopy(rend,BlueShapes, NULL,&ImageRect);
+	SDL_RenderPresent(rend);
+    //
+
+    // animation loop
+    while (!close) {
+        SDL_Event event;
+ 
+        // Events management
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+ 
+            case SDL_QUIT:
+                // handling of close button
+                close = 1;
+                break;
+ 
+            case SDL_KEYDOWN:
+                // keyboard API for key pressed
+                switch (event.key.keysym.scancode) {
+                case SDL_SCANCODE_W:
+                case SDL_SCANCODE_UP:
+                    dest.y -= speed / 30;
+                    break;
+                case SDL_SCANCODE_A:
+                case SDL_SCANCODE_LEFT:
+                    dest.x -= speed / 30;
+                    break;
+                case SDL_SCANCODE_S:
+                case SDL_SCANCODE_DOWN:
+                    dest.y += speed / 30;
+                    break;
+                case SDL_SCANCODE_D:
+                case SDL_SCANCODE_RIGHT:
+                    dest.x += speed / 30;
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+ 
+        // right boundary
+        if (dest.x + dest.w > 1000)
+            dest.x = 1000 - dest.w;
+ 
+        // left boundary
+        if (dest.x < 0)
+            dest.x = 0;
+ 
+        // bottom boundary
+        if (dest.y + dest.h > 1000)
+            dest.y = 1000 - dest.h;
+ 
+        // upper boundary
+        if (dest.y < 0)
+            dest.y = 0;
+ 
+        // clears the screen
+        SDL_RenderClear(rend);
+        SDL_RenderCopy(rend, tex, NULL, &dest);
+ 
+        // triggers the double buffers
+        // for multiple rendering
+        SDL_RenderPresent(rend);
+
+        //
+        SDL_RenderCopy(rend,BlueShapes, NULL,&ImageRect);
+		SDL_RenderPresent(rend);
+        //
+ 
+        // calculates to 60 fps
+        SDL_Delay(1000 / 60);
+    }
+ 
+    // destroy texture
+    SDL_DestroyTexture(tex);
+ 
+    // destroy renderer
+    SDL_DestroyRenderer(rend);
+ 
+    // destroy window
+    //SDL_DestroyWindow(win);
+     
+    // close SDL
+    SDL_Quit();
+ 
+    return 0;
 }
 
