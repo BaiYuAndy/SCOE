@@ -64,10 +64,8 @@ class window{
 		}
 
 		SDL_Renderer* getWindow(){
-			//SDL_Window *pWindow = NULL;
 			pWindow = SDL_CreateWindow(str,SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,winRect.w,winRect.h,0);
 
-			//SDL_Renderer *renderer = SDL_CreateRenderer(pWindow, -1, SDL_RENDERER_ACCELERATED);
 			renderer = SDL_CreateRenderer(pWindow, -1, SDL_RENDERER_ACCELERATED);
 
 			return renderer;
@@ -152,9 +150,9 @@ public:
 	
 		assert(pRender !=NULL);
 		
-		assert(imageSurface !=NULL);
+		assert(this->imageSurface !=NULL);
 	
-		BlueShapes = SDL_CreateTextureFromSurface(pRender, imageSurface);
+		BlueShapes = SDL_CreateTextureFromSurface(pRender, this->imageSurface);
 		
 		assert(BlueShapes !=NULL);
 		
@@ -162,7 +160,7 @@ public:
 		SDL_Rect ImageRect;
 		ImageRect.x=0;
 		ImageRect.y=0;
-		ImageRect.w = imageSurface->w;
+		ImageRect.w = imageSurface->w;//this part is control for background in window.
 		ImageRect.h = imageSurface->h;
 
 		SDL_RenderCopy(pRender,BlueShapes, &ImageRect, &bitmapRect);
