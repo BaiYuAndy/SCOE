@@ -1,9 +1,53 @@
 #include "my_facility.h"
 
-#define WIDTH 600
-#define HIGH 600
 
 SDL_Renderer* mainRender;
+
+SDL_TimerID actorLeftTimer,backgroundLeftTimer;
+
+window pWin;
+
+//
+
+Image background;
+
+ImageFirst actor;
+
+// speed of box
+int speed = 300;
+
+Uint32 actorLeft(Uint32 interval, void * param){
+    actor.moveCount++;
+
+    actor.dstrect.x += speed / 30;
+
+    mainRender = background.setRenderBitmap(mainRender,background.dstrect);
+
+    actor.actorChooseBitmap(actor.moveCount,2);
+    mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
+        
+    SDL_RenderPresent(mainRender);
+
+    return interval;
+}
+
+SDL_Rect ImageRect;
+        
+Uint32 backgroundLeft(Uint32 interval, void * param){
+    background.moveCount++;
+
+    ImageRect.x += speed / 30;
+    background.dstrect.w -= speed / 30;
+
+    mainRender = background.setRenderBitmap(mainRender,ImageRect,background.dstrect);
+
+    actor.actorChooseBitmap(background.moveCount,2);
+    mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
+        
+    SDL_RenderPresent(mainRender);
+
+    return interval;
+}
 
 int main(int argc, char *argv[])
 {
@@ -13,14 +57,15 @@ int main(int argc, char *argv[])
     }
 
     //get background information
-    Image background;
+
+    Image();//this is make sure init Image 
+    
     background.getLoadBitmap("res//background.bmp");
 
     background.width =(background.width/10)*10;
     background.high = (background.high/10)*10;
     
     //set window size width is background 1/4
-    window pWin;
 
     pWin.winRect.w = background.width/4;
     pWin.winRect.h = background.high;
@@ -31,15 +76,20 @@ int main(int argc, char *argv[])
     background.dstrect.w = background.width;
     background.dstrect.h = background.high;
  
+
+    ImageRect.x=0;
+    ImageRect.y=0;
+    ImageRect.w = background.dstrect.w;//this part is control for background in window.
+    ImageRect.h = pWin.winRect.h;
+
+
     // creates a renderer to render our images
     mainRender = pWin.getWindow();
 
     mainRender = background.setRenderBitmap(mainRender,background.dstrect);
     //
-    
-    Image actor;
 
-    actor.getLoadBitmap("res//actor//1.bmp");
+    actor.actorChooseBitmap(1,2);
     actor.dstrect.x = 0;
     actor.dstrect.y = background.dstrect.h - 1.8*actor.high;
     actor.dstrect.w = actor.width;
@@ -53,15 +103,24 @@ int main(int argc, char *argv[])
     // controls animation loop
     int close = 0;
  
-    // speed of box
-    int speed = 300;
     //
+    background.moveCount = 1;
+    actor.moveCount = 0;
 
 	SDL_RenderPresent(mainRender);
     //
 
     // animation loop
     while (!close) {
+
+        if(actor.moveCount >=6)
+            SDL_RemoveTimer(actorLeftTimer);
+
+        if(background.moveCount >=6){
+            SDL_RemoveTimer(backgroundLeftTimer);
+            background.moveCount = 1;
+        }
+
         SDL_Event event;
  
         // Events management
@@ -90,16 +149,24 @@ int main(int argc, char *argv[])
                     break;
                 case SDL_SCANCODE_D:
                 case SDL_SCANCODE_RIGHT:
-                    actor.dstrect.x += speed / 30;
+                    
+                if(background.dstrect.w > pWin.winRect.w){
 
-                    mainRender = background.setRenderBitmap(mainRender,background.dstrect);
+                    if(actor.dstrect.x <= (pWin.winRect.w)*0.75){
+                        
+                        if(actor.moveCount ==0 || actor.moveCount >= 6){
 
-                    actor.getLoadBitmap("res//actor//2.bmp");
-                    mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
+                            if(actor.moveCount >= 6)
+                                actor.moveCount = 1;
 
-                    //SDL_RenderCopy(mainRender, tex, NULL, &actor.dstrect);
-        
-                    SDL_RenderPresent(mainRender);
+                            actorLeftTimer = SDL_AddTimer(100,actorLeft,NULL);
+                        }
+                    }
+                    else if(background.moveCount == 1){
+                        backgroundLeftTimer = SDL_AddTimer(100,backgroundLeft,NULL);
+                    }
+
+                }
 
                     break;
                 default:
@@ -132,7 +199,7 @@ int main(int argc, char *argv[])
     SDL_DestroyRenderer(mainRender);
  
     pWin.~window();
-    actor.~Image();
+    actor.~ImageFirst();
     background.~Image();
      
     // close SDL

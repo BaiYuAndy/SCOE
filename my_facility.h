@@ -170,7 +170,7 @@ public:
 		return pRender;
 	}	
 	
-	void drawBitmap(SDL_Renderer* pRender,SDL_Rect bitmapRect,SDL_Rect drstect){
+	SDL_Renderer* setRenderBitmap(SDL_Renderer* pRender,SDL_Rect bitmapRect,SDL_Rect drstect){
 		assert(pRender !=NULL);
 		
 		assert(imageSurface !=NULL);
@@ -189,7 +189,9 @@ public:
 		assert(bitmapRect.w >= drstect.w);
 		
 		SDL_RenderCopy(pRender,BlueShapes, &bitmapRect, &drstect);
-		SDL_RenderPresent(pRender);
+		//SDL_RenderPresent(pRender);
+
+		return pRender;
 	}
 	
 	void drawBitmapCover(SDL_Renderer* pRender,SDL_Rect drstect,bool later){
@@ -245,16 +247,21 @@ public:
 		SDL_FreeSurface(imageSurface);
 	}
 	
-	virtual void actorChooseBitmap(int choose,int direct){};
+	virtual SDL_Surface *  actorChooseBitmap(int choose,int direct){
+
+		return imageSurface;
+	};
 	
 	virtual ~Image(){
-		//SDL_FreeSurface(imageSurface);
+		SDL_FreeSurface(imageSurface);
 		SDL_DestroyTexture(BlueShapes);
 	}
 };
 
 class ImageFirst: public Image{
-	
+	private:
+		SDL_Surface *imageSurface;
+
 	public:
 	
 	int upOrDown;
@@ -270,7 +277,7 @@ class ImageFirst: public Image{
 	
 	bool end;
 	
-	void actorChooseBitmap(int choose,int direct){
+	SDL_Surface * actorChooseBitmap(int choose,int direct){
 	
 		assert(choose>0 && choose<7);
 		
@@ -280,48 +287,55 @@ class ImageFirst: public Image{
 			
 			case 1:
 				if(direct == 2)
-					getLoadBitmap("res//actor//1.bmp");
+					imageSurface = getLoadBitmap("res//actor//1.bmp");
 				else
-					getLoadBitmap("res//actorL//1.bmp");
+					imageSurface = getLoadBitmap("res//actorL//1.bmp");
 			break;
 			
 			case 2:
 				if(direct == 2)
-					getLoadBitmap("res//actor//2.bmp");
+					imageSurface = getLoadBitmap("res//actor//2.bmp");
 				else
-					getLoadBitmap("res//actorL//2.bmp");
+					imageSurface = getLoadBitmap("res//actorL//2.bmp");
 			break;
 			
 			case 3:
 				if(direct == 2)
-					getLoadBitmap("res//actor//3.bmp");
+					imageSurface = getLoadBitmap("res//actor//3.bmp");
 				else
-					getLoadBitmap("res//actorL//3.bmp");
+					imageSurface = getLoadBitmap("res//actorL//3.bmp");
 			break;
 			
 			case 4:
 				if(direct == 2)
-					getLoadBitmap("res//actor//4.bmp");
+					imageSurface = getLoadBitmap("res//actor//4.bmp");
 				else
-					getLoadBitmap("res//actorL//4.bmp");
+					imageSurface = getLoadBitmap("res//actorL//4.bmp");
 			break;
 			
 			case 5:
 				if(direct == 2)
-					getLoadBitmap("res//actor//5.bmp");
+					imageSurface = getLoadBitmap("res//actor//5.bmp");
 				else
-					getLoadBitmap("res//actorL//5.bmp");
+					imageSurface = getLoadBitmap("res//actorL//5.bmp");
 			break;
 			
 			case 6:
 				if(direct == 2)
-					getLoadBitmap("res//actor//1.bmp");
+					imageSurface = getLoadBitmap("res//actor//1.bmp");
 				else
-					getLoadBitmap("res//actorL//1.bmp");
+					imageSurface = getLoadBitmap("res//actorL//1.bmp");
 			break;
 			
 		}
+
+		return imageSurface;
 	
+	}
+
+	~ImageFirst(){
+		SDL_FreeSurface(imageSurface);
+		
 	}
 };
 
