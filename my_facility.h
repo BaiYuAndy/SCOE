@@ -148,7 +148,7 @@ public:
 
 	}
 	
-	void drawBitmap(SDL_Renderer* pRender,SDL_Rect bitmapRect){	
+	SDL_Renderer* setRenderBitmap(SDL_Renderer* pRender,SDL_Rect bitmapRect){	
 	
 		assert(pRender !=NULL);
 		
@@ -166,8 +166,10 @@ public:
 		ImageRect.h = imageSurface->h;
 
 		SDL_RenderCopy(pRender,BlueShapes, &ImageRect, &bitmapRect);
-		SDL_RenderPresent(pRender);
 
+		//SDL_QueryTexture(BlueShapes, NULL, NULL, &ImageRect.w, &ImageRect.h);
+		//SDL_RenderPresent(pRender);
+		return pRender;
 	}	
 	
 	void drawBitmap(SDL_Renderer* pRender,SDL_Rect bitmapRect,SDL_Rect drstect){
