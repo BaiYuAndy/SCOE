@@ -16,22 +16,23 @@ ImageFirst actor;
 // speed of box
 int speed = 300;
 
+//picture to background rect
+SDL_Rect ImageRect;
+
 Uint32 actorLeft(Uint32 interval, void * param){
     actor.moveCount++;
 
     actor.dstrect.x += speed / 30;
 
-    mainRender = background.setRenderBitmap(mainRender,background.dstrect);
+    mainRender = background.setRenderBitmap(mainRender,ImageRect, background.dstrect);
 
-    actor.actorChooseBitmap(actor.moveCount,2);
+    actor.actorChooseBitmap(actor.moveCount,actor.direct);
     mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
         
     SDL_RenderPresent(mainRender);
 
     return interval;
 }
-
-SDL_Rect ImageRect;
         
 Uint32 backgroundLeft(Uint32 interval, void * param){
     background.moveCount++;
@@ -49,6 +50,21 @@ Uint32 backgroundLeft(Uint32 interval, void * param){
     return interval;
 }
 
+Uint32 actorRight(Uint32 interval, void * param){
+    actor.moveCount++;
+
+    actor.dstrect.x -= speed / 30;
+
+    mainRender = background.setRenderBitmap(mainRender,ImageRect, background.dstrect);
+
+    actor.actorChooseBitmap(actor.moveCount,actor.direct);
+    mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
+        
+    SDL_RenderPresent(mainRender);
+
+    return interval;
+}
+
 int main(int argc, char *argv[])
 {
     // returns zero on success else non-zero
@@ -57,8 +73,9 @@ int main(int argc, char *argv[])
     }
 
     //get background information
-
+    
     Image();//this is make sure init Image 
+    ImageFirst();
     
     background.getLoadBitmap("res//background.bmp");
 
@@ -66,6 +83,8 @@ int main(int argc, char *argv[])
     background.high = (background.high/10)*10;
     
     //set window size width is background 1/4
+
+    pWin.str = "my win";
 
     pWin.winRect.w = background.width/4;
     pWin.winRect.h = background.high;
@@ -88,8 +107,8 @@ int main(int argc, char *argv[])
 
     mainRender = background.setRenderBitmap(mainRender,background.dstrect);
     //
-
-    actor.actorChooseBitmap(1,2);
+    actor.direct = 2;
+    actor.actorChooseBitmap(1,actor.direct );
     actor.dstrect.x = 0;
     actor.dstrect.y = background.dstrect.h - 1.8*actor.high;
     actor.dstrect.w = actor.width;
@@ -97,7 +116,7 @@ int main(int argc, char *argv[])
 
     // set actor and background to window text contend.
 
-    mainRender = background.setRenderBitmap(mainRender,background.dstrect);
+    mainRender = background.setRenderBitmap(mainRender,ImageRect, background.dstrect);
     mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
  
     // controls animation loop
@@ -141,7 +160,20 @@ int main(int argc, char *argv[])
                     break;
                 case SDL_SCANCODE_A:
                 case SDL_SCANCODE_LEFT:
-                    actor.dstrect.x -= speed / 30;
+                    //actor.dstrect.x -= speed / 30;
+                    
+                    if(actor.direct == 2)
+                        actor.direct = 1;
+
+                    if(actor.moveCount ==0 || actor.moveCount >= 6){
+                        if(actor.dstrect.x > actor.width){
+                            if(actor.moveCount >= 6)
+                                actor.moveCount = 1;
+                        
+                            actorLeftTimer = SDL_AddTimer(100,actorRight,NULL);
+                        }
+                    }
+
                     break;
                 case SDL_SCANCODE_S:
                 case SDL_SCANCODE_DOWN:
@@ -150,9 +182,12 @@ int main(int argc, char *argv[])
                 case SDL_SCANCODE_D:
                 case SDL_SCANCODE_RIGHT:
                     
-                if(background.dstrect.w > pWin.winRect.w){
+                if(background.dstrect.w > (pWin.winRect.w)*1.2 ){ // right boundary
 
-                    if(actor.dstrect.x <= (pWin.winRect.w)*0.75){
+                    if(actor.direct == 1)
+                        actor.direct = 2;
+
+                    if(actor.dstrect.x <= (pWin.winRect.w)*0.7){// in inti actor move 
                         
                         if(actor.moveCount ==0 || actor.moveCount >= 6){
 
@@ -167,6 +202,19 @@ int main(int argc, char *argv[])
                     }
 
                 }
+                else if( (actor.dstrect.x + actor.dstrect.w) < 0.8*pWin.winRect.w){
+
+                    if(actor.direct == 1)
+                        actor.direct = 2;
+                    
+                    if(actor.moveCount ==0 || actor.moveCount >= 6){
+
+                        if(actor.moveCount >= 6)
+                            actor.moveCount = 1;
+                        actorLeftTimer = SDL_AddTimer(100,actorLeft,NULL);
+
+                      }
+                    }
 
                     break;
                 default:
@@ -176,8 +224,10 @@ int main(int argc, char *argv[])
         }
  
         // right boundary
-        if (actor.dstrect.x + actor.dstrect.w > 1000)
-            actor.dstrect.x = 1000 - actor.dstrect.w;
+        if (background.dstrect.w - actor.dstrect.x < actor.dstrect.w){
+            //actor.dstrect.x = background.dstrect.w - actor.dstrect.x;
+            SDL_RemoveTimer(actorLeftTimer);
+        }
  
         // left boundary
         if (actor.dstrect.x < 0)
@@ -195,13 +245,17 @@ int main(int argc, char *argv[])
         SDL_Delay(1000 / 60);
     }
  
+    // remove timeID
+    SDL_RemoveTimer(actorLeftTimer);
+    SDL_RemoveTimer(backgroundLeftTimer);
+
     // destroy renderer
     SDL_DestroyRenderer(mainRender);
  
-    pWin.~window();
     actor.~ImageFirst();
     background.~Image();
-     
+    pWin.~window();
+
     // close SDL
     SDL_Quit();
  
