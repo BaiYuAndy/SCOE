@@ -265,14 +265,17 @@ class ImageFirst: public Image{
 	public:
 	
 	int upOrDown;
+	bool onFalling;
 	
 	ImageFirst(){
 		width =30;
 		high =40;
 		
-		upOrDown = 1;//mean jump up
-		
+		upOrDown = 0;//1 mean jump up
+
 		end = false;
+
+		onFalling = false;// this is mean the actor in on falling after on the point
 	}
 	
 	bool end;

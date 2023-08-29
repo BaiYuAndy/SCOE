@@ -3,7 +3,7 @@
 
 SDL_Renderer* mainRender;
 
-SDL_TimerID actorLeftTimer,backgroundLeftTimer;
+SDL_TimerID actorLeftTimer,actorJumpTimer,backgroundLeftTimer;
 
 window pWin;
 
@@ -14,7 +14,9 @@ Image background;
 ImageFirst actor;
 
 // speed of box
-int speed = 300;
+const int speed = 300;
+
+const int jumpHigh = 150;
 
 //picture to background rect
 SDL_Rect ImageRect;
@@ -65,6 +67,38 @@ Uint32 actorRight(Uint32 interval, void * param){
     return interval;
 }
 
+Uint32 actorUp(Uint32 interval, void * param){
+    
+    if(actor.upOrDown == 1){
+        actor.dstrect.y -= speed / 15;
+        actor.moveCount = 5;
+    }
+    else if(actor.upOrDown == 0){
+        actor.dstrect.y += speed / 15;
+        actor.moveCount = 6;
+    }
+
+    mainRender = background.setRenderBitmap(mainRender,ImageRect, background.dstrect);
+
+
+    actor.actorChooseBitmap(actor.moveCount,actor.direct);
+    mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
+        
+    SDL_RenderPresent(mainRender);
+
+    return interval;
+
+}
+
+/*void setActorInit(){
+    actor.actorChooseBitmap(actor.moveCount,actor.direct);
+    mainRender = background.setRenderBitmap(mainRender,ImageRect, background.dstrect);
+
+    mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
+        
+    SDL_RenderPresent(mainRender);
+}*/
+
 int main(int argc, char *argv[])
 {
     // returns zero on success else non-zero
@@ -110,7 +144,7 @@ int main(int argc, char *argv[])
     actor.direct = 2;
     actor.actorChooseBitmap(1,actor.direct );
     actor.dstrect.x = 0;
-    actor.dstrect.y = background.dstrect.h - 1.8*actor.high;
+    const int actorOnGround = actor.dstrect.y = background.dstrect.h - 1.8*actor.high;
     actor.dstrect.w = actor.width;
     actor.dstrect.h = actor.high;
 
@@ -124,7 +158,7 @@ int main(int argc, char *argv[])
  
     //
     background.moveCount = 1;
-    actor.moveCount = 0;
+    actor.moveCount = 1;
 
 	SDL_RenderPresent(mainRender);
     //
@@ -138,6 +172,7 @@ int main(int argc, char *argv[])
         if(background.moveCount >=6){
             SDL_RemoveTimer(backgroundLeftTimer);
             background.moveCount = 1;
+            actor.moveCount = 1;
         }
 
         SDL_Event event;
@@ -156,8 +191,11 @@ int main(int argc, char *argv[])
                 switch (event.key.keysym.scancode) {
                 case SDL_SCANCODE_W:
                 case SDL_SCANCODE_UP:
-                    actor.dstrect.y -= speed / 30;
+                    //actor.dstrect.y -= speed / 30;
+                    actorJumpTimer = SDL_AddTimer(100,actorUp,NULL);
+                    actor.upOrDown = 1;
                     break;
+
                 case SDL_SCANCODE_A:
                 case SDL_SCANCODE_LEFT:
                     //actor.dstrect.x -= speed / 30;
@@ -165,7 +203,7 @@ int main(int argc, char *argv[])
                     if(actor.direct == 2)
                         actor.direct = 1;
 
-                    if(actor.moveCount ==0 || actor.moveCount >= 6){
+                    if(actor.moveCount ==1 || actor.moveCount >= 6){
                         if(actor.dstrect.x > actor.width){
                             if(actor.moveCount >= 6)
                                 actor.moveCount = 1;
@@ -177,7 +215,7 @@ int main(int argc, char *argv[])
                     break;
                 case SDL_SCANCODE_S:
                 case SDL_SCANCODE_DOWN:
-                    actor.dstrect.y += speed / 30;
+                    //actor.dstrect.y += speed / 30;
                     break;
                 case SDL_SCANCODE_D:
                 case SDL_SCANCODE_RIGHT:
@@ -189,7 +227,7 @@ int main(int argc, char *argv[])
 
                     if(actor.dstrect.x <= (pWin.winRect.w)*0.7){// in inti actor move 
                         
-                        if(actor.moveCount ==0 || actor.moveCount >= 6){
+                        if(actor.moveCount ==1 || actor.moveCount >= 6){
 
                             if(actor.moveCount >= 6)
                                 actor.moveCount = 1;
@@ -207,7 +245,7 @@ int main(int argc, char *argv[])
                     if(actor.direct == 1)
                         actor.direct = 2;
                     
-                    if(actor.moveCount ==0 || actor.moveCount >= 6){
+                    if(actor.moveCount ==1 || actor.moveCount >= 6){
 
                         if(actor.moveCount >= 6)
                             actor.moveCount = 1;
@@ -234,12 +272,19 @@ int main(int argc, char *argv[])
             actor.dstrect.x = 0;
  
         // bottom boundary
-        if (actor.dstrect.y + actor.dstrect.h > 1000)
-            actor.dstrect.y = 1000 - actor.dstrect.h;
- 
-        // upper boundary
-        if (actor.dstrect.y < 0)
-            actor.dstrect.y = 0;
+        if (actor.dstrect.y < jumpHigh && actor.upOrDown == 1){
+            //actor.dstrect.y = 1000 - actor.dstrect.h;
+            //SDL_RemoveTimer(actorJumpTimer);
+            actor.upOrDown = 0;
+            actor.onFalling = true;
+        }
+        if(actor.upOrDown ==0 && actor.onFalling && actor.dstrect.y >= actorOnGround){
+
+            SDL_RemoveTimer(actorJumpTimer);
+            actor.onFalling = false;
+            actor.moveCount = 1;
+
+        }
  
         // calculates to 60 fps
         SDL_Delay(1000 / 60);
@@ -248,6 +293,7 @@ int main(int argc, char *argv[])
     // remove timeID
     SDL_RemoveTimer(actorLeftTimer);
     SDL_RemoveTimer(backgroundLeftTimer);
+    SDL_RemoveTimer(actorJumpTimer);
 
     // destroy renderer
     SDL_DestroyRenderer(mainRender);
