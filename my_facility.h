@@ -266,6 +266,10 @@ class ImageFirst: public Image{
 	
 	int upOrDown;
 	bool onFalling;
+
+	bool onMove;
+
+	int style;
 	
 	ImageFirst(){
 		width =30;
@@ -276,6 +280,10 @@ class ImageFirst: public Image{
 		end = false;
 
 		onFalling = false;// this is mean the actor in on falling after on the point
+
+		onMove = false;
+
+		style = 0;
 	}
 	
 	bool end;

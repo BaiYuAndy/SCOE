@@ -7,11 +7,15 @@ SDL_TimerID actorLeftTimer,actorJumpTimer,backgroundLeftTimer;
 
 window pWin;
 
+//actor dstrect x point in window
+int xPoint = 0;
 //
 
 Image background;
 
 ImageFirst actor;
+
+ImageFirst enemy;
 
 // speed of box
 const int speed = 300;
@@ -30,9 +34,25 @@ Uint32 actorLeft(Uint32 interval, void * param){
 
     actor.actorChooseBitmap(actor.moveCount,actor.direct);
     mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
+
+    if(enemy.onMove){
+        enemy.dstrect.x -=speed/60;
+
+        if(enemy.style == 1)
+            enemy.getLoadBitmap("res//enemy//2.bmp");
+        else if(enemy.style == 0)
+            enemy.getLoadBitmap("res//enemy//1.bmp");
+
+        mainRender = enemy.setRenderBitmap(mainRender,enemy.dstrect);
+
+        enemy.style++;
+
+        enemy.style %=2;
+    
+    }
         
     SDL_RenderPresent(mainRender);
-
+    xPoint +=actor.dstrect.x;
     return interval;
 }
         
@@ -48,7 +68,7 @@ Uint32 backgroundLeft(Uint32 interval, void * param){
     mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
         
     SDL_RenderPresent(mainRender);
-
+    xPoint += ImageRect.x;
     return interval;
 }
 
@@ -90,14 +110,31 @@ Uint32 actorUp(Uint32 interval, void * param){
 
 }
 
-/*void setActorInit(){
-    actor.actorChooseBitmap(actor.moveCount,actor.direct);
-    mainRender = background.setRenderBitmap(mainRender,ImageRect, background.dstrect);
+Uint32 enemyMove(Uint32 interval, void * param){
+    
+    enemy.dstrect.x -=speed/60;
+    
+    if(!actor.onMove){
+        mainRender = background.setRenderBitmap(mainRender,ImageRect, background.dstrect);
+        mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
+    }
 
-    mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
+    if(enemy.style == 1)
+        enemy.getLoadBitmap("res//enemy//2.bmp");
+    else if(enemy.style == 0)
+        enemy.getLoadBitmap("res//enemy//1.bmp");
+
+    mainRender = enemy.setRenderBitmap(mainRender,enemy.dstrect);
         
     SDL_RenderPresent(mainRender);
-}*/
+
+    enemy.style++;
+
+    enemy.style %=2;
+
+    return interval;
+
+}
 
 int main(int argc, char *argv[])
 {
@@ -139,7 +176,7 @@ int main(int argc, char *argv[])
     // creates a renderer to render our images
     mainRender = pWin.getWindow();
 
-    mainRender = background.setRenderBitmap(mainRender,background.dstrect);
+    //mainRender = background.setRenderBitmap(mainRender,background.dstrect);
     //
     actor.direct = 2;
     actor.actorChooseBitmap(1,actor.direct );
@@ -160,19 +197,47 @@ int main(int argc, char *argv[])
     background.moveCount = 1;
     actor.moveCount = 1;
 
+    //
+    enemy.getLoadBitmap("res//enemy//1.bmp");
+    
+    enemy.dstrect.x = pWin.winRect.w - enemy.width;
+    enemy.dstrect.y = actor.dstrect.y;
+
+    enemy.dstrect.w = enemy.width;
+    enemy.dstrect.h = enemy.high;
+    
+    mainRender = enemy.setRenderBitmap(mainRender,enemy.dstrect);
+    SDL_TimerID enemyMoveTimer;
+
+    enemyMoveTimer = SDL_AddTimer(100,enemyMove,NULL);
+
+    //
 	SDL_RenderPresent(mainRender);
     //
 
     // animation loop
     while (!close) {
 
-        if(actor.moveCount >=6)
+        if(actor.moveCount >=6){
             SDL_RemoveTimer(actorLeftTimer);
+            actor.onMove = false;
+        }
 
         if(background.moveCount >=6){
             SDL_RemoveTimer(backgroundLeftTimer);
             background.moveCount = 1;
             actor.moveCount = 1;
+            //cout<<xPoint<<endl;
+        }
+
+        if(enemy.dstrect.x + enemy.width < 0 || actor.onMove){
+            SDL_RemoveTimer(enemyMoveTimer);
+            enemy.onMove = true;
+        }
+
+        if(enemy.dstrect.x > 0 && !actor.onMove && enemy.onMove){
+            enemyMoveTimer = SDL_AddTimer(100,enemyMove,NULL);
+            enemy.onMove = false;
         }
 
         SDL_Event event;
@@ -232,6 +297,7 @@ int main(int argc, char *argv[])
                             if(actor.moveCount >= 6)
                                 actor.moveCount = 1;
 
+                            actor.onMove = true;
                             actorLeftTimer = SDL_AddTimer(100,actorLeft,NULL);
                         }
                     }
