@@ -270,6 +270,8 @@ class ImageFirst: public Image{
 	bool onMove;
 
 	int style;
+
+	bool survive;
 	
 	ImageFirst(){
 		width =30;
@@ -284,6 +286,8 @@ class ImageFirst: public Image{
 		onMove = false;
 
 		style = 0;
+
+		survive = true;
 	}
 	
 	bool end;
@@ -370,6 +374,9 @@ class ImageSecond: public Image{
 	bool inMove;
 	int style;
 	int styleCount;
+
+	bool survive;
+
 	void actorChooseBitmap(){
 		
 		assert(styleCount>0 && styleCount<4);
@@ -415,6 +422,8 @@ class ImageSecond: public Image{
 		inMove = false;
 		
 		styleCount = 1;
+
+		survive = false;
 	}
 		
 };

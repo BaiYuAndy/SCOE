@@ -7,8 +7,9 @@ SDL_TimerID actorLeftTimer,actorJumpTimer,backgroundLeftTimer;
 
 window pWin;
 
-//actor dstrect x point in window
+//actor dstrect x point in window background whole width
 int xPoint = 0;
+int wholeBackground = 0;
 //
 
 Image background;
@@ -16,6 +17,8 @@ Image background;
 ImageFirst actor;
 
 ImageFirst enemy;
+
+ImageSecond enemyOther;
 
 // speed of box
 const int speed = 300;
@@ -66,6 +69,22 @@ Uint32 backgroundLeft(Uint32 interval, void * param){
 
     actor.actorChooseBitmap(background.moveCount,2);
     mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
+
+    if(enemy.onMove){
+        enemy.dstrect.x -=speed/60;
+
+        if(enemy.style == 1)
+            enemy.getLoadBitmap("res//enemy//2.bmp");
+        else if(enemy.style == 0)
+            enemy.getLoadBitmap("res//enemy//1.bmp");
+
+        mainRender = enemy.setRenderBitmap(mainRender,enemy.dstrect);
+
+        enemy.style++;
+
+        enemy.style %=2;
+    
+    }
         
     SDL_RenderPresent(mainRender);
     xPoint += ImageRect.x;
@@ -81,6 +100,22 @@ Uint32 actorRight(Uint32 interval, void * param){
 
     actor.actorChooseBitmap(actor.moveCount,actor.direct);
     mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
+
+    if(enemy.onMove){
+        enemy.dstrect.x -=speed/60;
+
+        if(enemy.style == 1)
+            enemy.getLoadBitmap("res//enemy//2.bmp");
+        else if(enemy.style == 0)
+            enemy.getLoadBitmap("res//enemy//1.bmp");
+
+        mainRender = enemy.setRenderBitmap(mainRender,enemy.dstrect);
+
+        enemy.style++;
+
+        enemy.style %=2;
+    
+    }
         
     SDL_RenderPresent(mainRender);
 
@@ -136,6 +171,15 @@ Uint32 enemyMove(Uint32 interval, void * param){
 
 }
 
+bool actorOnEnemy(int xPoint,int yPoint,int xPosition,int yPosition,int width){
+
+    if(yPoint >= yPosition && (xPoint+width) >=xPosition && xPoint <=(xPosition+width))
+        return true;
+    else
+        return false;
+
+}
+
 int main(int argc, char *argv[])
 {
     // returns zero on success else non-zero
@@ -150,7 +194,7 @@ int main(int argc, char *argv[])
     
     background.getLoadBitmap("res//background.bmp");
 
-    background.width =(background.width/10)*10;
+    wholeBackground =  background.width = (background.width/10)*10;
     background.high = (background.high/10)*10;
     
     //set window size width is background 1/4
@@ -215,6 +259,8 @@ int main(int argc, char *argv[])
 	SDL_RenderPresent(mainRender);
     //
 
+    ImageSecond();
+    //
     // animation loop
     while (!close) {
 
@@ -235,9 +281,29 @@ int main(int argc, char *argv[])
             enemy.onMove = true;
         }
 
-        if(enemy.dstrect.x > 0 && !actor.onMove && enemy.onMove){
+        if(enemy.dstrect.x > 0 && !actor.onMove && enemy.onMove /*&&  enemy.survive*/){
             enemyMoveTimer = SDL_AddTimer(100,enemyMove,NULL);
             enemy.onMove = false;
+        }
+
+        if(xPoint > wholeBackground/2 && !enemyOther.survive){
+
+            enemyOther.style = 3;
+            enemyOther.styleCount = 1;
+
+            enemyOther.actorChooseBitmap();
+
+            enemyOther.dstrect.x = pWin.winRect.w - enemyOther.width;
+            enemyOther.dstrect.y = actor.dstrect.y;
+
+            enemyOther.dstrect.w = enemyOther.width;
+            enemyOther.dstrect.h = enemyOther.high;
+
+            enemyOther.survive = true;
+
+            mainRender = enemyOther.setRenderBitmap(mainRender,enemyOther.dstrect);
+            SDL_RenderPresent(mainRender);
+
         }
 
         SDL_Event event;
@@ -349,7 +415,6 @@ int main(int argc, char *argv[])
             SDL_RemoveTimer(actorJumpTimer);
             actor.onFalling = false;
             actor.moveCount = 1;
-
         }
  
         // calculates to 60 fps
