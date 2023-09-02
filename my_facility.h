@@ -108,6 +108,7 @@ public:
 		downCount = 0;
 	}
 	SDL_Rect dstrect;
+	SDL_Rect bmpRect;
 
 	int width,high;
 	
@@ -247,52 +248,44 @@ public:
 		SDL_FreeSurface(imageSurface);
 	}
 	
-	virtual SDL_Surface *  actorChooseBitmap(int choose,int direct){
-
-		return imageSurface;
-	};
+	virtual void actorChooseBitmap(int choose,int direct){};
 	
 	virtual ~Image(){
-		SDL_FreeSurface(imageSurface);
+		//SDL_FreeSurface(imageSurface);
 		SDL_DestroyTexture(BlueShapes);
 	}
 };
 
 class ImageFirst: public Image{
-	private:
-		SDL_Surface *imageSurface;
-
+	
 	public:
 	
 	int upOrDown;
-	bool onFalling;
+	
+	int moveCount;//mean choose for picture for actor
+
+	int direct;//2-left 1-right
 
 	bool onMove;
 
-	int style;
-
-	bool survive;
-	
 	ImageFirst(){
 		width =30;
 		high =40;
 		
-		upOrDown = 0;//1 mean jump up
-
+		upOrDown = 1;//mean jump up
+		
 		end = false;
 
-		onFalling = false;// this is mean the actor in on falling after on the point
+		moveCount = 1;
+
+		direct =2;
 
 		onMove = false;
-
-		style = 0;
-
-		survive = true;
 	}
 	
 	bool end;
 	
-	SDL_Surface * actorChooseBitmap(int choose,int direct){
+	void actorChooseBitmap(int choose,int direct){
 	
 		assert(choose>0 && choose<7);
 		
@@ -302,55 +295,48 @@ class ImageFirst: public Image{
 			
 			case 1:
 				if(direct == 2)
-					imageSurface = getLoadBitmap("res//actor//1.bmp");
+					getLoadBitmap("res//actor//1.bmp");
 				else
-					imageSurface = getLoadBitmap("res//actorL//1.bmp");
+					getLoadBitmap("res//actorL//1.bmp");
 			break;
 			
 			case 2:
 				if(direct == 2)
-					imageSurface = getLoadBitmap("res//actor//2.bmp");
+					getLoadBitmap("res//actor//2.bmp");
 				else
-					imageSurface = getLoadBitmap("res//actorL//2.bmp");
+					getLoadBitmap("res//actorL//2.bmp");
 			break;
 			
 			case 3:
 				if(direct == 2)
-					imageSurface = getLoadBitmap("res//actor//3.bmp");
+					getLoadBitmap("res//actor//3.bmp");
 				else
-					imageSurface = getLoadBitmap("res//actorL//3.bmp");
+					getLoadBitmap("res//actorL//3.bmp");
 			break;
 			
 			case 4:
 				if(direct == 2)
-					imageSurface = getLoadBitmap("res//actor//4.bmp");
+					getLoadBitmap("res//actor//4.bmp");
 				else
-					imageSurface = getLoadBitmap("res//actorL//4.bmp");
+					getLoadBitmap("res//actorL//4.bmp");
 			break;
 			
 			case 5:
 				if(direct == 2)
-					imageSurface = getLoadBitmap("res//actor//5.bmp");
+					getLoadBitmap("res//actor//5.bmp");
 				else
-					imageSurface = getLoadBitmap("res//actorL//5.bmp");
+					getLoadBitmap("res//actorL//5.bmp");
 			break;
 			
 			case 6:
 				if(direct == 2)
-					imageSurface = getLoadBitmap("res//actor//1.bmp");
+					getLoadBitmap("res//actor//1.bmp");
 				else
-					imageSurface = getLoadBitmap("res//actorL//1.bmp");
+					getLoadBitmap("res//actorL//1.bmp");
 			break;
 			
 		}
-
-		return imageSurface;
 	
-	}
-
-	~ImageFirst(){
-		SDL_FreeSurface(imageSurface);
-		
 	}
 };
 
@@ -374,39 +360,38 @@ class ImageSecond: public Image{
 	bool inMove;
 	int style;
 	int styleCount;
-
-	bool survive;
-
-	void actorChooseBitmap(){
+	void actorChooseBitmap(int choose,int direct){
 		
-		assert(styleCount>0 && styleCount<4);
+		assert(choose>0 && choose<4);
+
+		assert(direct>0 && direct<4);
 		
-		switch(styleCount){
+		switch(direct){
 			
 			case 1:
-				if( style == 2)
+				if( choose == 2)
 					getLoadBitmap("res//enemy//11.bmp");
-				else if( style == 3)
+				else if( choose == 3)
 					getLoadBitmap("res//enemy//21.bmp");
-				else
+				else if(choose == 1)
 					getLoadBitmap("res//enemy//1.bmp");
 			break;
 			
 			case 2:
-				if(style == 2)
+				if(choose == 2)
 					getLoadBitmap("res//enemy//12.bmp");
-				else if( style == 3)
+				else if( choose == 3)
 					getLoadBitmap("res//enemy//22.bmp");
-				else
+				else if(choose == 1)
 					getLoadBitmap("res//enemy//2.bmp");
 			break;
 			
 			case 3:
-				if(style == 2)
+				if(choose == 2)
 					getLoadBitmap("res//enemy//13.bmp");
-				else if( style == 3)
+				else if( choose == 3)
 					getLoadBitmap("res//enemy//23.bmp");
-				else
+				else if(choose == 1)
 					getLoadBitmap("res//enemy//3.bmp");
 			break;
 			
@@ -422,8 +407,6 @@ class ImageSecond: public Image{
 		inMove = false;
 		
 		styleCount = 1;
-
-		survive = false;
 	}
 		
 };
