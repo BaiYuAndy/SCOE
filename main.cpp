@@ -12,6 +12,8 @@ int speed = 300;
 
 int xPoint  = 0;
 
+int onGround = 0;
+
 ImageFirst actor;
 
 Image background;
@@ -23,7 +25,11 @@ Uint32 actorLeft(Uint32 interval, void * param){
 
     mainRender = background.setRenderBitmap(mainRender,background.bmpRect,background.dstrect);
 
-    actor.actorChooseBitmap(actor.moveCount,2);
+    if(actor.upOrDown == 1 && actor.dstrect.y < (background.dstrect.h - 2*actor.high))
+        actor.actorChooseBitmap(2,2);
+    else
+        actor.actorChooseBitmap(actor.moveCount,2);
+        
     mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
 
     if(enemy->inMove)
@@ -43,7 +49,11 @@ Uint32 actorRight(Uint32 interval, void * param){
 
     mainRender = background.setRenderBitmap(mainRender,background.bmpRect,background.dstrect);
 
-    actor.actorChooseBitmap(actor.moveCount,1);
+    if(actor.upOrDown == 1 && actor.dstrect.y < (background.dstrect.h - 2*actor.high))
+        actor.actorChooseBitmap(2,2);
+    else
+        actor.actorChooseBitmap(actor.moveCount,1);
+    
     mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
 
     if(enemy->inMove)
@@ -63,7 +73,11 @@ Uint32 backgroundLeft(Uint32 interval, void * param){
 
     mainRender = background.setRenderBitmap(mainRender,background.bmpRect, background.dstrect);
 
-    actor.actorChooseBitmap(actor.moveCount,2);
+    if(actor.upOrDown == 1 && actor.dstrect.y < (background.dstrect.h - 2*actor.high))
+        actor.actorChooseBitmap(2,2);
+    else
+        actor.actorChooseBitmap(actor.moveCount,2);
+    
     mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
 
     if(enemy->inMove)
@@ -215,6 +229,29 @@ int main(int argc, char *argv[])
             SDL_RemoveTimer(actorJumpTimer);
             actor.dstrect.y = (background.dstrect.h - 1.8*actor.high);
             actor.onMove = false;
+            if(enemCount >= 0 && enemy->start) {
+                if(actor.dstrect.x+actor.dstrect.w> enemy->dstrect.x
+                    && actor.dstrect.x< enemy->dstrect.x+enemy->dstrect.w){
+                    SDL_RemoveTimer(enemyMoveTimer);//
+                    enemy->inMove = false;
+                    enemy->start = false;
+                    //this is a demo
+                    enemy->styleCount = 3;
+                    enemy->actorChooseBitmap(enemy->style,enemy->styleCount);
+                    enemy->dstrect.x = actor.dstrect.x +actor.dstrect.w;
+                    enemy->dstrect.y = actor.dstrect.y;
+
+                    mainRender = background.setRenderBitmap(mainRender,background.bmpRect,background.dstrect);
+                    mainRender = enemy->setRenderBitmap(mainRender,enemy->dstrect);
+
+                    mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
+                    
+                    SDL_RenderPresent(mainRender);
+                    if(enemCount > 1)
+                        enemCount--;
+                    //
+                }
+            }
         }
 
         //cout<<xPoint<<"\t"<<background.width/2<<enemCount<<"\t"<<endl;
@@ -223,7 +260,12 @@ int main(int argc, char *argv[])
             enemy->dstrect.x = pWin.winRect.w;
             
             enemy->style =3;
+
+            enemy->styleCount = 1;
+
             enemy->inMove = true;
+
+            enemy->start = true;
     
             enemyMoveTimer = SDL_AddTimer(100,enemyMove,NULL);
             
@@ -263,16 +305,20 @@ int main(int argc, char *argv[])
                 case SDL_SCANCODE_D:
                 case SDL_SCANCODE_RIGHT:
                     actor.direct = 2;
-                    if(!actor.end){
+                    if(!actor.end && actor.upOrDown == 1){
 
-                    if(actor.dstrect.x <= pWin.winRect.w*0.55)
-                        actorLeftTimer = SDL_AddTimer(100,actorLeft,NULL); 
-                    else
-                        backgroundLeftTimer = SDL_AddTimer(100,backgroundLeft,NULL);
-
-                    actor.onMove = true;
+                        if(actor.dstrect.x <= pWin.winRect.w*0.55)
+                            actorLeftTimer = SDL_AddTimer(100,actorLeft,NULL); 
+                        else
+                            backgroundLeftTimer = SDL_AddTimer(100,backgroundLeft,NULL);
+    
+                        actor.onMove = true;
 
                     }
+                    else if(actor.upOrDown == 1){
+                        actorLeftTimer = SDL_AddTimer(100,actorLeft,NULL); 
+                    }
+
                     break;
                 default:
                     break;
@@ -283,6 +329,11 @@ int main(int argc, char *argv[])
         // right boundary
         if (!actor.end && background.dstrect.w < 1.1*pWin.winRect.w)
             actor.end = true;
+        else if(actor.end && background.dstrect.w < 1.1*pWin.winRect.w
+                && actor.dstrect.x > pWin.winRect.w){
+            SDL_RemoveTimer(actorLeftTimer);
+        }
+
         if(enemy->dstrect.x +enemy->width <0 && (enemy->inMove == true) ){
             SDL_RemoveTimer(enemyMoveTimer);
             enemy->inMove = false;

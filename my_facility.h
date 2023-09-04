@@ -402,7 +402,7 @@ class ImageSecond: public Image{
 		width =30;
 		high =40;
 		
-		start = false;
+		start = true;
 		style = 1;
 		inMove = false;
 		
