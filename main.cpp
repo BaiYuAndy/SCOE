@@ -293,7 +293,7 @@ int main(int argc, char *argv[])
                     break;
                 case SDL_SCANCODE_A:
                 case SDL_SCANCODE_LEFT:
-                    if(!actor.onMove || actor.upOrDown == 1){
+                    if(!actor.onMove ){
                         actorLeftTimer = SDL_AddTimer(100,actorRight,NULL); 
                         actor.direct = 1;
                         actor.onMove = true;
@@ -305,7 +305,7 @@ int main(int argc, char *argv[])
                     break;
                 case SDL_SCANCODE_D:
                 case SDL_SCANCODE_RIGHT:
-                    if(!actor.onMove|| actor.upOrDown == 1){
+                    if(!actor.onMove){
 
                         actor.direct = 2;
                         if(!actor.end && actor.upOrDown == 1){
@@ -319,6 +319,7 @@ int main(int argc, char *argv[])
     
                         }
                         else if(actor.upOrDown == 1){
+                            actor.onMove = true;
                             actorLeftTimer = SDL_AddTimer(100,actorLeft,NULL); 
                         }
                     
