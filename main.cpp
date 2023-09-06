@@ -293,10 +293,11 @@ int main(int argc, char *argv[])
                     break;
                 case SDL_SCANCODE_A:
                 case SDL_SCANCODE_LEFT:
-                    //actor.dstrect.x -= speed / 30;
-                    actorLeftTimer = SDL_AddTimer(100,actorRight,NULL); 
-                    actor.direct = 1;
-                    actor.onMove = true;
+                    if(!actor.onMove || actor.upOrDown == 1){
+                        actorLeftTimer = SDL_AddTimer(100,actorRight,NULL); 
+                        actor.direct = 1;
+                        actor.onMove = true;
+                    }
                     break;
                 case SDL_SCANCODE_S:
                 case SDL_SCANCODE_DOWN:
@@ -304,21 +305,25 @@ int main(int argc, char *argv[])
                     break;
                 case SDL_SCANCODE_D:
                 case SDL_SCANCODE_RIGHT:
-                    actor.direct = 2;
-                    if(!actor.end && actor.upOrDown == 1){
+                    if(!actor.onMove|| actor.upOrDown == 1){
 
-                        if(actor.dstrect.x <= pWin.winRect.w*0.55)
-                            actorLeftTimer = SDL_AddTimer(100,actorLeft,NULL); 
-                        else
-                            backgroundLeftTimer = SDL_AddTimer(100,backgroundLeft,NULL);
+                        actor.direct = 2;
+                        if(!actor.end && actor.upOrDown == 1){
     
-                        actor.onMove = true;
-
+                            if(actor.dstrect.x <= pWin.winRect.w*0.55)
+                                actorLeftTimer = SDL_AddTimer(100,actorLeft,NULL); 
+                            else
+                                backgroundLeftTimer = SDL_AddTimer(100,backgroundLeft,NULL);
+        
+                            actor.onMove = true;
+    
+                        }
+                        else if(actor.upOrDown == 1){
+                            actorLeftTimer = SDL_AddTimer(100,actorLeft,NULL); 
+                        }
+                    
                     }
-                    else if(actor.upOrDown == 1){
-                        actorLeftTimer = SDL_AddTimer(100,actorLeft,NULL); 
-                    }
-
+                    
                     break;
                 default:
                     break;
