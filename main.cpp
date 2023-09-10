@@ -20,6 +20,8 @@ Image background;
 
 ImageSecond* enemy = new ImageSecond;
 
+Image cloud;
+
 Uint32 actorLeft(Uint32 interval, void * param){
     actor.dstrect.x += speed / 30;
 
@@ -148,6 +150,22 @@ Uint32 enemyMove(Uint32 interval, void * param){
     return interval;
 }
 
+Uint32 cloudUpMove(Uint32 interval, void * param){
+
+    mainRender = background.setRenderBitmap(mainRender,background.bmpRect, background.dstrect);
+    
+    cloud.dstrect.y -=speed/30;
+    actor.dstrect.y -=speed/30;
+
+    cloud.setRenderBitmap(mainRender,cloud.dstrect);
+            
+    actor.setRenderBitmap(mainRender,actor.dstrect);
+
+    SDL_RenderPresent(mainRender);
+
+    return interval;
+}
+
 int main(int argc, char *argv[])
 {
     // returns zero on success else non-zero
@@ -192,6 +210,9 @@ int main(int argc, char *argv[])
     actor.upOrDown = 1;
     // set actor and background to window text contend.
 
+    //
+    bool gameover = false;
+
     mainRender = background.setRenderBitmap(mainRender,background.bmpRect,background.dstrect);
     mainRender = actor.setRenderBitmap(mainRender,actor.dstrect);
     
@@ -211,6 +232,9 @@ int main(int argc, char *argv[])
 
     // set enemy other
     short enemCount = 2;
+
+    //
+    SDL_TimerID cloudTimer;
 
     // controls animation loop
     int close = 0; 
@@ -336,9 +360,30 @@ int main(int argc, char *argv[])
         if (!actor.end && background.dstrect.w < 1.1*pWin.winRect.w)
             actor.end = true;
         else if(actor.end && background.dstrect.w < 1.1*pWin.winRect.w
-                && actor.dstrect.x > pWin.winRect.w){
+                && actor.dstrect.x > (pWin.winRect.w-actor.dstrect.w)
+                && !gameover){
             SDL_RemoveTimer(actorLeftTimer);
+
+            cloud.getLoadBitmap("res//cloud.bmp");
+            
+            cloud.dstrect.w = cloud.width;
+            cloud.dstrect.h = cloud.high;
+            cloud.dstrect.x = pWin.winRect.w - cloud.width;
+            cloud.dstrect.y = pWin.winRect.h - cloud.high;
+
+            cloudTimer = SDL_AddTimer(100,cloudUpMove,NULL);
+
+            mainRender = background.setRenderBitmap(mainRender,background.bmpRect, background.dstrect);
+            cloud.setRenderBitmap(mainRender,cloud.dstrect);
+            
+            actor.setRenderBitmap(mainRender,actor.dstrect);
+
+            SDL_RenderPresent(mainRender);
+            gameover = true;
         }
+
+        if(gameover && cloud.dstrect.y<0)
+            close = 1;
 
         if(enemy->dstrect.x +enemy->width <0 && (enemy->inMove == true) ){
             SDL_RemoveTimer(enemyMoveTimer);
