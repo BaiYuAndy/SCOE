@@ -118,6 +118,86 @@ bool setBlockMap(int (*map)[9],int x,int y){
 	
 }
 
+int upDownBlock(int block,int blockDown){
+
+	int addDown = -1;
+
+	if( blockDown == 1 && block == 0)
+		addDown = 10;
+	else if(blockDown == 0 && block == 1)
+		addDown = 10;
+	else if(blockDown == 1 && block == 1)
+		addDown = 2;
+	else if(blockDown ==2  && block == 1)
+		addDown = 3;
+	else if(blockDown ==2  && block == 0)
+		addDown = 4;
+	else if(blockDown == 3 && block == 0)
+		addDown = 11;
+	else if(blockDown == 4 && block == 1)
+		addDown = 11;
+	else if(blockDown == 7 && block == 1)
+		addDown = 12;
+	else if(blockDown ==  11 && block == 7)
+		addDown = 14;
+	else if(blockDown ==  12 && block == 1)
+		addDown = 15;
+	else if(blockDown ==  7 && block == 2)
+		addDown = 15;
+	else if(blockDown ==  4 && block == 4)
+		addDown = 13;
+
+	return addDown;
+}
+
+int setTripBlockMap(int block,int blockDown,int blockRight){
+
+	int addDown;
+
+	if(blockDown == 10 && block == 10){
+		if(blockRight == 10)
+			addDown = 100;
+		else 
+			addDown = 0;
+	}
+	else if(blockDown == 9 && block == 9){
+		if(blockRight == 9)
+			addDown = 101;
+		else 
+			addDown = 0;
+	}
+	else if(blockDown == 8 && block == 8){
+		if(blockRight == 8)
+			addDown = 102;
+		else 
+			addDown = 0;
+	}
+	else if(blockDown == 5 && block == 5){
+		if(blockRight == 5)
+			addDown = 103;
+		else 
+			addDown = 0;
+	}
+	else if(blockDown == 6 && block == 6){
+		if(blockRight == 6)
+			addDown = 104;
+		else 
+			addDown = 0;
+	}
+	else if(blockDown == 7 && block == 7){
+		if(blockRight == 7)
+			addDown = 105;
+		else 
+			addDown = 0;
+	}
+	//
+	
+	else
+		addDown = 0;
+	
+	return addDown;
+}
+
 int setNewBlockMap(int (*map)[9],int x,int y){
 	int addDown;
 	int block = *(*(map+x)+y);
