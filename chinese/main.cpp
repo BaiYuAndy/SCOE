@@ -7,12 +7,17 @@
 
 SDL_Renderer* mainRender;
 
+ //set window project 
+ window pWin;
+
 Image* block = new Image();
 Image* backMap = new Image(); 
 
 int moveCount = 0 , wordNum = 0;
 
 int width,high;
+
+int blockPointX;
 
 struct node
 {
@@ -44,42 +49,52 @@ void setBlock(){
 int onBlock(int x,int y){
 
 	int onSite = 0;
-
+	//cout<<"Ypoint is"<<y<<endl;
 	for(int i = 0;i< list.size();i++){
-
+	//	cout<<"list is "<<list.at(i).x<<"\t"<<list.at(i).y<<endl;
 		if(x == (list.at(i)).x){
-			if(y + high >= (list.at(i)).y){
+			if(y + high == (list.at(i)).y){
 				onSite = (list.at(i)).y;
 				break;
 			}
 		}
   	}
+  	//cout<<"----------"<<endl;
   	return onSite;
 
 }
 
-int onBlockXposition(int x,int y,bool left){
+int onBlockXpositionLeft(int x,int y){
 
 	int onSite = 0;
 	
 	for(int i = 0;i< list.size();i++){
 
 		if(y == (list.at(i)).y){
-			if(left){
-				if(x + width == (list.at(i)).x){
-					onSite = (list.at(i)).x;
-
-				/*cout<<"x y "<<x<<"\t"<<y<<endl;
-				cout<<list.at(i).x<<"\t"<<list.at(i).y<<endl;
-				cout<<"onSite is"<<onSite;*/
-					break;
-				}
+			
+			if(x - width == (list.at(i)).x){
+				onSite = (list.at(i)).x;
+				break;
 			}
-			else{
-				if(x - width == (list.at(i)).x){
-					onSite = (list.at(i)).x;
-					break;
-				}
+		}
+		
+  	}
+  	
+  	return onSite;
+
+}
+
+int onBlockXpositionRight(int x,int y){
+
+	int onSite = 0;
+	
+	for(int i = 0;i< list.size();i++){
+
+		if(y == (list.at(i)).y){
+			
+			if(x + width == (list.at(i)).x){
+				onSite = (list.at(i)).x;
+				break;
 			}
 		}
 		
@@ -110,6 +125,7 @@ void setList(int x,int y,int wordNum){
 		if(x == (list.at(i)).x){
 			if(y == (list.at(i)).y){
 				(list.at(i)).mapNum = wordNum;
+				//cout<<"bai";
 				break;
 			}
 		}
@@ -122,16 +138,142 @@ void earseList(int x ,int y){
 		if(x == (list.at(i)).x){
 			if(y == (list.at(i)).y){
 				list.erase(list.begin()+i);
+				//cout<< i<<endl;
 				break;
 			}
 		}
   	}
 }
 
+bool inList(int x,int y){
+
+	bool inList = false;
+
+	for(int i = 0;i< list.size();i++){
+
+		if(x == (list.at(i)).x){
+			if(y == (list.at(i)).y){
+				inList = true;
+				break;
+			}
+		}
+  	}
+  	return inList;
+}
+
+int setMapBlock(Image *block){
+	bool panduan = false;
+	int onBottom = 0;
+
+	struct node point;
+        	
+    point.x = block->dstrect.x;
+
+    if(onBlock(block->dstrect.x,block->dstrect.y)){
+        int tempWord;
+        int tempY = onBlock(block->dstrect.x,block->dstrect.y);
+        int tempNum = onBlockNum(block->dstrect.x,tempY);
+        	
+        if(onBlockXpositionLeft(block->dstrect.x,block->dstrect.y) > 0){
+        	int tempX = onBlockXpositionLeft(block->dstrect.x,block->dstrect.y);
+        			
+        	if(onBlockNum(tempX,block->dstrect.y) > -1){
+        				
+        		int tempNumRight = onBlockNum(tempX,block->dstrect.y);
+        				
+        		if(setTripBlockMap(wordNum,tempNum,tempNumRight)){
+        			tempWord = setTripBlockMap(wordNum,tempNum,tempNumRight);
+        			setList(block->dstrect.x,tempY,tempWord);
+        			
+        			earseList(tempX,block->dstrect.y);
+        			earseList(block->dstrect.x,block->dstrect.y);
+        			
+        			onBottom = tempWord;
+
+        		}
+        		else{
+        			if(upDownBlock(wordNum,tempNum)> -1){
+        				tempWord = upDownBlock(wordNum,tempNum);
+        				setList(block->dstrect.x,tempY,tempWord);
+        				onBottom = tempWord;
+        			}
+        			else {
+        				point.y =  onBlock(block->dstrect.x,block->dstrect.y) - high;
+        				point.mapNum = wordNum;
+        				list.push_back(point);
+        				
+        				onBottom = 0;
+        			}
+        		}
+        	}
+        }
+        else if(onBlockXpositionRight(block->dstrect.x,block->dstrect.y) > 0){
+        	int tempX = onBlockXpositionRight(block->dstrect.x,block->dstrect.y);
+        	
+        	if(onBlockNum(tempX,block->dstrect.y) > -1){
+        		
+        		int tempNumRight = onBlockNum(tempX,block->dstrect.y);
+        		
+        		if(setTripBlockMap(wordNum,tempNum,tempNumRight)){
+        			tempWord = setTripBlockMap(wordNum,tempNum,tempNumRight);
+        			setList(block->dstrect.x,tempY,tempWord);
+        			
+        			earseList(tempX,block->dstrect.y);
+        			earseList(block->dstrect.x,block->dstrect.y);
+        			//cout<<tempX<<"\t"<<block->dstrect.y<<endl;
+        			onBottom = tempWord;
+        			
+        		}
+        		else{
+        			if(upDownBlock(wordNum,tempNum)> -1){
+        				tempWord = upDownBlock(wordNum,tempNum);
+        				setList(block->dstrect.x,tempY,tempWord);
+
+        				onBottom = tempWord;
+        			}
+        			else{
+        				point.y =  onBlock(block->dstrect.x,block->dstrect.y) - high;
+        				point.mapNum = wordNum;
+        				list.push_back(point);
+        				
+        				onBottom = 0;
+        			}
+        		}
+        	}
+        }
+        else if(upDownBlock(wordNum,tempNum)> -1){
+        	tempWord = upDownBlock(wordNum,tempNum);
+        	
+        	setList(block->dstrect.x,tempY,tempWord);
+        	
+        	onBottom = tempWord;
+        }
+       	else{
+       		if(!inList(block->dstrect.x,block->dstrect.y)){
+       			point.y =  onBlock(block->dstrect.x,block->dstrect.y) - high;
+       			point.mapNum = wordNum;
+       			list.push_back(point);
+       		}
+       			
+    		onBottom = 0;
+       	}
+       	
+    }
+    else{
+
+        point.y = pWin.winRect.h-high;
+        point.mapNum = wordNum;
+        list.push_back(point);
+    	
+    	onBottom = 0;		
+    }
+
+	return onBottom;
+}// onBottom 0 means true on bottom
 
 Uint32 blockDown(Uint32 interval, void * param){
 	
-	block->dstrect.y += block->high/4;
+	block->dstrect.y += high/4;
 
 	mainRender = backMap->setRenderBitmap(mainRender,backMap->dstrect);
 
@@ -183,9 +325,6 @@ int main(int argc, char *argv[])
 
     background.width = width*12;
     background.high  = high*10;
-    
-    //set window size width is background 1/4
-    window pWin;
 
     pWin.winRect.w = background.width;
     pWin.winRect.h = background.high;
@@ -206,7 +345,8 @@ int main(int argc, char *argv[])
     //block->getLoadBitmap("res//word//yi.bmp");
     
     // block X position when Y is 0
-    const int blockPointX = block->width * 4;
+    //const int 
+    blockPointX = block->width * 4;
 
     block->dstrect.x = blockPointX;
     block->dstrect.y = 0;
@@ -228,126 +368,80 @@ int main(int argc, char *argv[])
 	blockDownTimer = SDL_AddTimer(DOWNSPEED,blockDown,NULL);
 
     // animation loop
+
+    bool blockNext = false;
     while (!close) {
-		//block on bottom line
+    	//block on bottom line
     	if(block->dstrect.y+ high >= pWin.winRect.h
     		|| onBlock(block->dstrect.x,block->dstrect.y)){
-    		//cout<<block->dstrect.y<<endl;
-    		//add to vector list
-        	struct node point;
-        	//point = (struct node *)malloc(sizeof(sruct node *));
-        	point.x = block->dstrect.x;
-        	
-        	if(onBlock(block->dstrect.x,block->dstrect.y)){
-        		int tempWord;
-        		int tempY = onBlock(block->dstrect.x,block->dstrect.y);
-        		int tempNum = onBlockNum(block->dstrect.x,tempY);
-        		//bool leftPosition = true;
-        		if(onBlockXposition(block->dstrect.x,block->dstrect.y,true) > 0){
-        			int tempX = onBlockXposition(block->dstrect.x,block->dstrect.y,true);
-        			
-        			if(onBlockNum(tempX,block->dstrect.y) > -1){
-        				
-        				int tempNumRight = onBlockNum(tempX,block->dstrect.y);
-        				
-        				if(setTripBlockMap(wordNum,tempNum,tempNumRight)){
-        					tempWord = setTripBlockMap(wordNum,tempNum,tempNumRight);
-        					setList(block->dstrect.x,tempY,tempWord);
-        					earseList(tempX,block->dstrect.y);
-        					
-        				}
-        				else{
-        					if(upDownBlock(wordNum,tempNum)> -1){
-        						tempWord = upDownBlock(wordNum,tempNum);
-        						setList(block->dstrect.x,tempY,tempWord);
-        					}
-        					else {
-        						point.y =  onBlock(block->dstrect.x,block->dstrect.y) - high;
-        						point.mapNum = wordNum;
-        						list.push_back(point);
-        					}
-        				}
-        			}
-        		}
-        		else if(onBlockXposition(block->dstrect.x,block->dstrect.y,false) > 0){
-        			int tempX = onBlockXposition(block->dstrect.x,block->dstrect.y,false);
-        			
-        			if(onBlockNum(tempX,block->dstrect.y) > -1){
-        				
-        				int tempNumRight = onBlockNum(tempX,block->dstrect.y);
-        				
-        				if(setTripBlockMap(wordNum,tempNum,tempNumRight)){
-        					tempWord = setTripBlockMap(wordNum,tempNum,tempNumRight);
-        					setList(block->dstrect.x,tempY,tempWord);
-        					earseList(tempX,block->dstrect.y);
-        					
-        				}
-        				else{
-
-        					if(upDownBlock(wordNum,tempNum)> -1){
-        						tempWord = upDownBlock(wordNum,tempNum);
-        						setList(block->dstrect.x,tempY,tempWord);
-        					}
-        					else{
-        						point.y =  onBlock(block->dstrect.x,block->dstrect.y) - high;
-        						point.mapNum = wordNum;
-        						list.push_back(point);
-        					}
-        				}
-        			}
-        		}
-        		else if(upDownBlock(wordNum,tempNum)> -1){
-        			tempWord = upDownBlock(wordNum,tempNum);
-        			setList(block->dstrect.x,tempY,tempWord);
-        		}
-        		else{
-        			point.y =  onBlock(block->dstrect.x,block->dstrect.y) - high;
-        			point.mapNum = wordNum;
-        			list.push_back(point);
-	
-    				//	
-    				block->dstrect.x = blockPointX;
-        		}
-        		
-        	}
-        	else{
-        		point.y = pWin.winRect.h-high;
-
+    		/*
+    		struct node point;
+    		if(block->dstrect.y+ high >= pWin.winRect.h){
+    			
+    			point.x = block->dstrect.x;
+    			point.y = ((block->dstrect.y)/10) * 10;
         		point.mapNum = wordNum;
 
         		list.push_back(point);
-
-    			//	
-    			block->dstrect.x = blockPointX;
-    			
     		}
-    		
-    		SDL_RemoveTimer(blockDownTimer);
-    		block->dstrect.y = 0;
-
-    		// calculates to 60 fps
-        	SDL_Delay(1000 / 30);
+    		else if(onBlock(block->dstrect.x,block->dstrect.y)){
+    			int tempY = onBlock(block->dstrect.x,block->dstrect.y);
+    			int tempNum = onBlockNum(block->dstrect.x,tempY);
+    			
+    			if(upDownBlock(wordNum,tempNum)> -1){
+        			int tempWord = upDownBlock(wordNum,tempNum);
+        			setList(block->dstrect.x,tempY,tempWord);
         	
-        	//wordNum = random(0,10);
-        	//wordNum = 6;
-        	if(wordNum == 0)
-        		wordNum = 1;
-        	else if(wordNum == 1)
-        		wordNum = 0;
-			
-        	block->getLoadBitmap(getWordByNUM(wordNum));
-        	blockDownTimer = SDL_AddTimer(DOWNSPEED,blockDown,NULL);
+        			}
+        		else{
+	
+    				point.x = block->dstrect.x;
+    				point.y = onBlock(block->dstrect.x,block->dstrect.y) - high;
+        			point.mapNum = wordNum;
+	
+        			list.push_back(point);
+        		}
+    		}*/
+    		//setMapBlock(block);
+    		int start = setMapBlock(block);
+    		while( start !=0 ){
+    			
+    			wordNum = start;
+    			block->dstrect.y = onBlock(block->dstrect.x,block->dstrect.y);
 
-        	//free(point);
+    			start = setMapBlock(block);
+    		}
+        	//cout<<"size"<<list.size()<<endl;	
+    			SDL_RemoveTimer(blockDownTimer);
+
+    			block->dstrect.x = blockPointX;
+
+    			block->dstrect.y = 0;
+
+    			// calculates to 60 fps
+        		SDL_Delay(1000 / 30);
+        	
+        		//wordNum = random(0,10);
+        		//wordNum = 6;
+
+        		if(wordNum == 0)
+        			wordNum = 1;
+        		else if(wordNum == 1)
+        			wordNum = 0;
+        		else
+        			wordNum = 1;
+				
+        		block->getLoadBitmap(getWordByNUM(wordNum));
+        		blockDownTimer = SDL_AddTimer(DOWNSPEED,blockDown,NULL);
+
+    		//}
+    		
     	}
-    	
-    	//
     	else if(moveCount >3){
     		blockDownTimer = SDL_AddTimer(DOWNSPEED,blockDown,NULL);
     		moveCount = 0;
     		SDL_RemoveTimer(blockMoveTimer);
     	}
-    	
     	//
         SDL_Event event;
  
@@ -398,7 +492,6 @@ int main(int argc, char *argv[])
             }
         }
 	}
-
 	// destroy renderer
     SDL_DestroyRenderer(mainRender);
  
