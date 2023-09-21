@@ -257,10 +257,15 @@ int main(int argc, char *argv[])
         					
         				}
         				else{
-
-        					point.y =  onBlock(block->dstrect.x,block->dstrect.y) - high;
-        					point.mapNum = wordNum;
-        					list.push_back(point);
+        					if(upDownBlock(wordNum,tempNum)> -1){
+        						tempWord = upDownBlock(wordNum,tempNum);
+        						setList(block->dstrect.x,tempY,tempWord);
+        					}
+        					else {
+        						point.y =  onBlock(block->dstrect.x,block->dstrect.y) - high;
+        						point.mapNum = wordNum;
+        						list.push_back(point);
+        					}
         				}
         			}
         		}
@@ -279,9 +284,15 @@ int main(int argc, char *argv[])
         				}
         				else{
 
-        					point.y =  onBlock(block->dstrect.x,block->dstrect.y) - high;
-        					point.mapNum = wordNum;
-        					list.push_back(point);
+        					if(upDownBlock(wordNum,tempNum)> -1){
+        						tempWord = upDownBlock(wordNum,tempNum);
+        						setList(block->dstrect.x,tempY,tempWord);
+        					}
+        					else{
+        						point.y =  onBlock(block->dstrect.x,block->dstrect.y) - high;
+        						point.mapNum = wordNum;
+        						list.push_back(point);
+        					}
         				}
         			}
         		}
@@ -316,13 +327,14 @@ int main(int argc, char *argv[])
 
     		// calculates to 60 fps
         	SDL_Delay(1000 / 30);
-        	wordNum = random(0,10);
+        	
+        	//wordNum = random(0,10);
         	//wordNum = 6;
-        	/*if(wordNum == 0)
+        	if(wordNum == 0)
         		wordNum = 1;
         	else if(wordNum == 1)
         		wordNum = 0;
-			*/
+			
         	block->getLoadBitmap(getWordByNUM(wordNum));
         	blockDownTimer = SDL_AddTimer(DOWNSPEED,blockDown,NULL);
 
@@ -359,7 +371,7 @@ int main(int argc, char *argv[])
 
                 case SDL_SCANCODE_A:
                 case SDL_SCANCODE_LEFT:
-                	if(block->dstrect.x > 0){
+                	if(block->dstrect.x > width){
                     	block->direct = 1;
                 		SDL_RemoveTimer(blockDownTimer);
                 		blockMoveTimer = SDL_AddTimer(100,blockMove,NULL);
@@ -373,7 +385,7 @@ int main(int argc, char *argv[])
 
                 case SDL_SCANCODE_D:
                 case SDL_SCANCODE_RIGHT:
-                	if(block->dstrect.x +width <pWin.winRect.w){
+                	if(block->dstrect.x +width <pWin.winRect.w - width){
                 		block->direct = 2;
                 		SDL_RemoveTimer(blockDownTimer);
                 		blockMoveTimer = SDL_AddTimer(100,blockMove,NULL);
