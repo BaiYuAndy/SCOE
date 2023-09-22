@@ -2,7 +2,7 @@
 #include "word.h"
 
 #define DOWNSPEED 100
-#define BLOCKINIT 0
+#define BLOCKINIT 7
 
 SDL_Renderer* mainRender;
 
@@ -12,7 +12,9 @@ SDL_Renderer* mainRender;
 Image* block = new Image();
 Image* backMap = new Image(); 
 
-int moveCount = 0 , wordNum;
+Image* blockNext = new Image();
+
+int moveCount = 0 , wordNum, wordNextNum;
 
 int width,high;
 
@@ -29,6 +31,20 @@ struct node
 vector<node> list;
 
 vector<node> subList;
+
+int nextBlockDown(){
+	int wordNum =0 ;
+	wordNum = random(0,10);
+    /*    		
+    if(wordNum == 1)
+    	wordNum = 0;
+    else if(wordNum == 0)
+    	wordNum = 1;
+    else 
+    	wordNum = 0;*/
+
+	return wordNum;
+}
 
 void setBlock(){
 	for(int i = 0;i< list.size();i++){
@@ -338,6 +354,8 @@ Uint32 blockDown(Uint32 interval, void * param){
 
 	setBlock();
 
+	mainRender = blockNext->setRenderBitmap(mainRender,blockNext->dstrect);
+
 	mainRender = block->setRenderBitmap(mainRender,block->dstrect);
 
 	SDL_RenderPresent(mainRender);
@@ -355,6 +373,8 @@ Uint32 blockMove(Uint32 interval, void * param){
 	mainRender = backMap->setRenderBitmap(mainRender,backMap->dstrect);
 
 	setBlock();
+
+	mainRender =blockNext->setRenderBitmap(mainRender,blockNext->dstrect);
 	
 	mainRender = block->setRenderBitmap(mainRender,block->dstrect);
 
@@ -363,6 +383,19 @@ Uint32 blockMove(Uint32 interval, void * param){
 	moveCount++;
 
 	return interval;
+}
+
+int minList(vector<node> *list){
+	int min = (list->at(0)).y;
+
+	for(int i=1;i<list->size();i++){
+		if(min> (list->at(i)).y){
+			min = (list->at(i)).y;
+		}
+
+	}
+	//cout<<min<<endl;
+	return min;
 }
 
 int main(int argc, char *argv[])
@@ -415,6 +448,16 @@ int main(int argc, char *argv[])
 
     mainRender =block->setRenderBitmap(mainRender,block->dstrect);
 
+    wordNextNum = nextBlockDown();
+
+    blockNext->dstrect.x = pWin.winRect.w - width;
+    blockNext->dstrect.y = 0; 
+    blockNext->dstrect.w = width;
+    blockNext->dstrect.h = width;
+    blockNext->getLoadBitmap(getWordByNUM(wordNextNum));
+
+    mainRender =blockNext->setRenderBitmap(mainRender,blockNext->dstrect);
+
     // controls animation loop
     int close = 0; 
     //
@@ -429,41 +472,14 @@ int main(int argc, char *argv[])
 
     // animation loop
 
-    bool blockNext = false;
+    bool blockNextShow = true;
     while (!close) {
     	//block on bottom line
     	if(block->dstrect.y+ high >= pWin.winRect.h
     		|| onBlock(block->dstrect.x,block->dstrect.y)){
-    		/*
-    		struct node point;
-    		if(block->dstrect.y+ high >= pWin.winRect.h){
-    			
-    			point.x = block->dstrect.x;
-    			point.y = ((block->dstrect.y)/10) * 10;
-        		point.mapNum = wordNum;
-
-        		list.push_back(point);
-    		}
-    		else if(onBlock(block->dstrect.x,block->dstrect.y)){
-    			int tempY = onBlock(block->dstrect.x,block->dstrect.y);
-    			int tempNum = onBlockNum(block->dstrect.x,tempY);
-    			
-    			if(upDownBlock(wordNum,tempNum)> -1){
-        			int tempWord = upDownBlock(wordNum,tempNum);
-        			setList(block->dstrect.x,tempY,tempWord);
-        	
-        			}
-        		else{
-	
-    				point.x = block->dstrect.x;
-    				point.y = onBlock(block->dstrect.x,block->dstrect.y) - high;
-        			point.mapNum = wordNum;
-	
-        			list.push_back(point);
-        		}
-    		}*/
-    		//setMapBlock(block);
+    		
     		int start = setMapBlock(block);
+    		
     		while( start !=0 ){
     			
     			wordNum = start;
@@ -471,8 +487,16 @@ int main(int argc, char *argv[])
 
     			start = setMapBlock(block);
     		}
-        	//cout<<"size"<<list.size()<<endl;	
+        	
     			SDL_RemoveTimer(blockDownTimer);
+
+    			//
+
+    		if(minList(&list)==0){
+    			close =1;
+    			break;
+    		}
+    		else{
 
     			block->dstrect.x = blockPointX;
 
@@ -480,21 +504,23 @@ int main(int argc, char *argv[])
 
     			// calculates to 60 fps
         		SDL_Delay(1000 / 30);
-        	
-        		//wordNum = random(0,10);
-        		//wordNum = 6;
+        		
+        		wordNum = wordNextNum;
 
-        		if(wordNum == 0)
-        			wordNum = 1;
-        		else if(wordNum == 1)
+        		wordNextNum = nextBlockDown();
+        		blockNext->getLoadBitmap(getWordByNUM(wordNextNum));
+        		//wordNum = random(0,10);
+        		
+        		/*if(wordNum == 1)
+        			wordNum = 0;
+        		else if(wordNum == 0)
         			wordNum = 1;
         		else 
-        			wordNum = 0;
+        			wordNum = 0;*/
 				
         		block->getLoadBitmap(getWordByNUM(wordNum));
         		blockDownTimer = SDL_AddTimer(DOWNSPEED,blockDown,NULL);
-
-    		//}
+        	}
     		
     	}
     	else if(moveCount >3){
@@ -563,6 +589,8 @@ int main(int argc, char *argv[])
      
     // close SDL
     SDL_Quit();
+
+    free(block);
     
     //for(int i=0;i<subList.size();i++){
     //	cout<<"x is "<<subList.at(i).x<<"y is "<<subList.at(i).y<<endl;
