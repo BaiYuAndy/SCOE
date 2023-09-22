@@ -1,9 +1,8 @@
 #include "my_facility.h"
 #include "word.h"
 
-#define fix 66 //this is block high number
-
-#define DOWNSPEED 150
+#define DOWNSPEED 100
+#define BLOCKINIT 0
 
 SDL_Renderer* mainRender;
 
@@ -13,7 +12,7 @@ SDL_Renderer* mainRender;
 Image* block = new Image();
 Image* backMap = new Image(); 
 
-int moveCount = 0 , wordNum = 0;
+int moveCount = 0 , wordNum;
 
 int width,high;
 
@@ -28,6 +27,8 @@ struct node
 };
 
 vector<node> list;
+
+vector<node> subList;
 
 void setBlock(){
 	for(int i = 0;i< list.size();i++){
@@ -125,7 +126,7 @@ void setList(int x,int y,int wordNum){
 		if(x == (list.at(i)).x){
 			if(y == (list.at(i)).y){
 				(list.at(i)).mapNum = wordNum;
-				//cout<<"bai";
+				
 				break;
 			}
 		}
@@ -136,13 +137,60 @@ void earseList(int x ,int y){
 	for(int i = 0;i< list.size();i++){
 
 		if(x == (list.at(i)).x){
-			if(y == (list.at(i)).y){
+			if(y == (list.at(i)).y ){
+				
 				list.erase(list.begin()+i);
-				//cout<< i<<endl;
+				
 				break;
 			}
 		}
   	}
+}
+
+void earseAboveBlock(int x ,int y){
+
+	if(subList.size() !=0)
+		subList.clear();
+
+	for(int i = 0;i< list.size();i++){
+		//cout<<"x is"<<x<<"\t"<<"y is "<<y<<endl;
+		if(x == (list.at(i)).x){
+			for(int j = 0;j< list.size();j++){
+				if( (list.at(i)).y<y){
+					//cout<<"list Y is "<< (list.at(i)).y<<"y is "<<y<<endl;
+					
+					//list.at(i).y += high;
+					bool addSub =true;
+					for(int k= 0;k< subList.size();k++){
+						if(list.at(i).y == subList.at(k).y ){
+							addSub =false;
+							break;
+						}
+					}
+					if(addSub){
+						//cout<<list.at(i).y;
+						subList.push_back(list.at(i));
+					}
+				}
+			}
+			
+		}
+  	}
+
+  	int lastTemp;
+  	for(int i=0;i<list.size();i++){
+  		lastTemp =0;
+  		for(int j=0;j<subList.size();j++){
+  			if(list.at(i).x == subList.at(j).x
+  				&& list.at(i).y!= lastTemp
+  				&& list.at(i).y ==subList.at(j).y){
+  				//cout<<list.at(i).y;
+  				list.at(i).y +=high;
+  				lastTemp = list.at(i).y;
+  			}
+  		}
+	}
+  	//cout<<"-------"<<endl;
 }
 
 bool inList(int x,int y){
@@ -179,14 +227,19 @@ int setMapBlock(Image *block){
         			
         	if(onBlockNum(tempX,block->dstrect.y) > -1){
         				
-        		int tempNumRight = onBlockNum(tempX,block->dstrect.y);
+        		int tempNumLeft = onBlockNum(tempX,block->dstrect.y);
         				
-        		if(setTripBlockMap(wordNum,tempNum,tempNumRight)){
-        			tempWord = setTripBlockMap(wordNum,tempNum,tempNumRight);
-        			setList(block->dstrect.x,tempY,tempWord);
+        		if(setTripBlockMap(wordNum,tempNum,tempNumLeft)){
+        			tempWord = setTripBlockMap(wordNum,tempNum,tempNumLeft);
+        			//setList(block->dstrect.x,tempY,tempWord);
         			
-        			earseList(tempX,block->dstrect.y);
-        			earseList(block->dstrect.x,block->dstrect.y);
+        			//earseAboveBlock(tempX,block->dstrect.y);
+
+        			earseList(tempX,block->dstrect.y);//remove left block
+        			earseList(block->dstrect.x,block->dstrect.y);//remove block itself
+
+        			earseAboveBlock(tempX,block->dstrect.y);
+        			setList(block->dstrect.x,tempY,tempWord);
         			
         			onBottom = tempWord;
 
@@ -216,11 +269,17 @@ int setMapBlock(Image *block){
         		
         		if(setTripBlockMap(wordNum,tempNum,tempNumRight)){
         			tempWord = setTripBlockMap(wordNum,tempNum,tempNumRight);
-        			setList(block->dstrect.x,tempY,tempWord);
+        			//setList(block->dstrect.x,tempY,tempWord);
         			
-        			earseList(tempX,block->dstrect.y);
-        			earseList(block->dstrect.x,block->dstrect.y);
-        			//cout<<tempX<<"\t"<<block->dstrect.y<<endl;
+        			//earseAboveBlock(tempX,block->dstrect.y);
+        			
+        			earseList(tempX,block->dstrect.y);//remove right block
+
+        			earseList(block->dstrect.x,block->dstrect.y);//remove block itselt
+        			
+        			earseAboveBlock(tempX,block->dstrect.y);
+        			setList(block->dstrect.x,tempY,tempWord);
+
         			onBottom = tempWord;
         			
         		}
@@ -313,6 +372,7 @@ int main(int argc, char *argv[])
         printf("error initializing SDL: %s\n", SDL_GetError());
     }
 
+    wordNum = BLOCKINIT;
 
     block->getLoadBitmap(getWordByNUM(wordNum));
     width = block->width = (block->width/10)*10;
@@ -427,9 +487,9 @@ int main(int argc, char *argv[])
         		if(wordNum == 0)
         			wordNum = 1;
         		else if(wordNum == 1)
-        			wordNum = 0;
-        		else
         			wordNum = 1;
+        		else 
+        			wordNum = 0;
 				
         		block->getLoadBitmap(getWordByNUM(wordNum));
         		blockDownTimer = SDL_AddTimer(DOWNSPEED,blockDown,NULL);
@@ -503,6 +563,10 @@ int main(int argc, char *argv[])
      
     // close SDL
     SDL_Quit();
+    
+    //for(int i=0;i<subList.size();i++){
+    //	cout<<"x is "<<subList.at(i).x<<"y is "<<subList.at(i).y<<endl;
+    //}
 
 	return 0;
 }
