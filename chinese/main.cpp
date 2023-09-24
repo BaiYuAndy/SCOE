@@ -31,17 +31,17 @@ struct node
 vector<node> list;
 
 vector<node> subList;
-
+static int tempWordNumNext = 0;
 int nextBlockDown(){
 	int wordNum =0 ;
-	wordNum = random(0,10);
-    /*    		
-    if(wordNum == 1)
-    	wordNum = 0;
-    else if(wordNum == 0)
-    	wordNum = 1;
-    else 
-    	wordNum = 0;*/
+	//wordNum = random(0,10);
+    
+    wordNum = tempWordNumNext;
+    tempWordNumNext+=1;
+
+    if(tempWordNumNext == 10)
+    	tempWordNumNext = 0;  		
+    
 
 	return wordNum;
 }
@@ -79,6 +79,26 @@ int onBlock(int x,int y){
   	//cout<<"----------"<<endl;
   	return onSite;
 
+}
+
+bool moveBlock(int x,int y,int direct){
+	bool onSite = true;
+
+	for(int i=0;i<list.size();i++){
+		if( (y+width)> list.at(i).y && y<(list.at(i).y +width)){
+			if(direct ==1){
+				if( (x-width)== list.at(i).x )
+					onSite = false;
+				} 
+			else if(direct ==2){
+				if( (x+width)== list.at(i).x )
+					onSite = false;
+				} 
+		}
+		
+	}
+
+	return onSite;
 }
 
 int onBlockXpositionLeft(int x,int y){
@@ -551,8 +571,10 @@ int main(int argc, char *argv[])
 
                 case SDL_SCANCODE_A:
                 case SDL_SCANCODE_LEFT:
-                	if(block->dstrect.x > width){
-                    	block->direct = 1;
+                	block->direct = 1;
+                	if(block->dstrect.x > width 
+                		&& moveBlock(block->dstrect.x,block->dstrect.y,block->direct)){
+                    	
                 		SDL_RemoveTimer(blockDownTimer);
                 		blockMoveTimer = SDL_AddTimer(100,blockMove,NULL);
                 	}
@@ -565,8 +587,10 @@ int main(int argc, char *argv[])
 
                 case SDL_SCANCODE_D:
                 case SDL_SCANCODE_RIGHT:
-                	if(block->dstrect.x +width <pWin.winRect.w - width){
-                		block->direct = 2;
+                	block->direct = 2;
+                	if(block->dstrect.x +width <pWin.winRect.w - width
+                		&& moveBlock(block->dstrect.x,block->dstrect.y,block->direct)){
+                		
                 		SDL_RemoveTimer(blockDownTimer);
                 		blockMoveTimer = SDL_AddTimer(100,blockMove,NULL);
                 	}
