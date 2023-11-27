@@ -133,8 +133,17 @@ void Btree::insertNodeleaf(int data,Btree& node,Btree& root){
 			
 		}
 		else{
+			Btree* nodeParent = (node.parent);
+			//if(nodeParent->parent!=NULL){
+				while( nodeParent->parent!=NULL
+					&&(nodeParent->parent)->keyLength() >= ((nodeParent->parent)->keyDegree)){
+
+					nodeParent = (nodeParent->parent);
+				}
+			//}
 			
-			(node.parent)->parent = ((node.parent)->spildKeys((node.parent)));
+			//(node.parent)->parent = ((node.parent)->spildKeys((node.parent)));
+			(nodeParent)->parent = ((nodeParent)->spildKeys((nodeParent)));
 			
 			node.addNode(data,&node);
 			//((node.parent)->parent)->preOrder();
@@ -488,6 +497,11 @@ int main(){
 	root = root->addNode(32,root);
 	root = root->addNode(14,root);
 	root = root->addNode(26,root);
+
+	root = root->addNode(36,root);
+	root = root->addNode(66,root);
+	root = root->addNode(68,root);
+	root = root->addNode(0,root);
 	
 	//root->preOrder();
 	//Btree *node;
