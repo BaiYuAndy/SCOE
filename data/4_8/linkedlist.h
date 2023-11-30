@@ -1,5 +1,8 @@
+#include <iostream>
 #include <stdlib.h>
-#include "node.h"
+#include "NODE.h"
+
+using namespace std;
 
 int min(const int a,const int b)
 {
@@ -96,7 +99,7 @@ int LinkedList<T>::Size(void)const
 template<class T>
 bool LinkedList<T>::IsEmpty (void)const
 {
-	return size?FALSE:TRUE;
+	return size?false:true;
 }
 
 template<class T>
@@ -198,7 +201,7 @@ void LinkedList<T>::DeleteAt(void)
 	Node<T> *oldNode;
 	if(!currPtr)
 	{
-		cerr<<"DeleteAt: current position is invalid!"<<endl;
+		cout<<"DeleteAt: current position is invalid!"<<endl;
 		return;
 	}
 	if(!prevPtr)
@@ -226,7 +229,7 @@ void LinkedList<T>::DeleteAfter(void)
 	Node<T> *oldNode;
 	if(!currPtr||currPtr==rear)
 	{
-		cerr<<"DeleteAfter: current position is invalid!"<<endl;
+		cout<<"DeleteAfter: current position is invalid!"<<endl;
 		return;
 	}
 	oldNode=currPtr->DeleteAfter();
@@ -245,7 +248,7 @@ T LinkedList<T>::GetData(void)const
 {
 	if(!size||!currPtr)
 	{
-		cerr<<"Data: current node not exist!"<<endl;
+		cout<<"Data: current node not exist!"<<endl;
 		exit(1);
 	}
 	return currPtr->data;
@@ -256,7 +259,7 @@ void LinkedList<T>::SetData(const T & item)
 {
 	if(!size||!currPtr)
 	{
-		cerr<<"Data: current node not exist!"<<endl;
+		cout<<"Data: current node not exist!"<<endl;
 		exit(1);
 	}
 	currPtr->data=item;

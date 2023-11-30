@@ -14,7 +14,7 @@ ostream& operator<< ( ostream& cout, LinkedSet<T> *p)
 	return cout;
 }
 
-void main( void )
+int main( void )
 {
 	LinkedSet<int> l1, l2, *tmp;
 
@@ -31,4 +31,6 @@ void main( void )
 	cout<<"the union:"<<tmp;
 	tmp=Intersection(l1, l2);
 	cout<<"the intersection:"<<tmp;
+
+	return 0;
 }

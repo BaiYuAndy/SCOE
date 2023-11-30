@@ -1,3 +1,5 @@
+#include <stddef.h>
+
 template<class T>
 class DNode
 {
@@ -55,7 +57,8 @@ void DNode<T> :: InsertAfter(DNode<T> *ptr)
 template<class T>
 DNode<T> *DNode<T> :: DeleteAt(void)
 {
-	if (next == this) return NULL;
+	if (next == this) 
+		return NULL;
 	next -> prev = prev;
 	prev -> next = next;
 	return this;

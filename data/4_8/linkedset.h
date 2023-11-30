@@ -10,10 +10,10 @@ class LinkedSet: public LinkedList<T>
 template <class T>
 int LinkedSet<T>::Find(T& item)
 {
-	for (int i=0; i<Size(); i++)
+	for (int i=0; i<this->Size(); i++)
 	{
-		SetPosition(i);
-		if (GetData()==item) return i;
+		this->SetPosition(i);
+		if (this->GetData()==item) return i;
 	}
 	return -1;
 }
@@ -32,7 +32,7 @@ LinkedSet<T> *Union(LinkedSet<T> &x, LinkedSet<T> &y)
 		tmp.InsertAfter(a);
 	}
 
-	for ( i=0; i<m; i++)
+	for (int i=0; i<m; i++)
 	{
 		y.SetPosition(i);
 		T a = y.GetData();

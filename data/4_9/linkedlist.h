@@ -1,5 +1,8 @@
+#include <iostream>
 #include <stdlib.h>
-#include "node.h"
+#include "NODE.h"
+
+using namespace std;
 
 int min(const int a,const int b)
 {
@@ -96,7 +99,7 @@ int LinkedList<T>::Size(void)const
 template<class T>
 bool LinkedList<T>::IsEmpty (void)const
 {
-	return size?FALSE:TRUE;
+	return size?false:true;
 }
 
 template<class T>
