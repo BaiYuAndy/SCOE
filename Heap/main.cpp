@@ -232,16 +232,18 @@ int main(){
 
 	//cout<<"hello make file";
 
-	int data[N]={15,17,19,13,22,16,28,30,41,62};
+	//int data[N]={15,17,19,13,22,16,28,30,41,62};
+	int k =5;
+	int data[5] = {7,10,4,20,15};
 
 	Heap heap;
 	int i=0;
-	while(i<10){
+	while(i<k){
 		heap.list.push_back(data[i]);
 		i++;
 	}
 
-	showList((heap.list));
+	/*showList((heap.list));
 
 	heap.shitUp(33);
 	heap.shitUp(23);
@@ -256,7 +258,12 @@ int main(){
 	showList((heap.list));
 
 	heap.erase();
+	showList((heap.list));*/
+	heap.createHeap(k);
 	showList((heap.list));
+	heap.sortHeap(k);
+	showList((heap.list));
+
 
 	return 0;
 }

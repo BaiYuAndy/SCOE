@@ -17,12 +17,13 @@ class Node
         // list modification methods
         void InsertAfter(Node<T> *p);
         Node<T> *DeleteAfter(void);
+
+        Node<T>* DeleteNode(T data);
         
         // obtain the address of the next node
         Node<T> *NextNode(void) const;
 
-//		Node<T> *Reverse(); 另一种方法
-		void Reverse(Node<int> *&p);
+		void Reverse(Node<T> *&p);
 };
 
 // constructor. initialize data and pointer members
@@ -66,44 +67,55 @@ Node<T> *Node<T>::DeleteAfter(void)
     return tempPtr;
 }
 
-/*另一种方法
-template <class T>
-Node<T> * Node<T>::Reverse()
-{
-    Node<T> *ptr1, *ptr2, *p = this;
+//set data as node value for delete node in list
+template <typename T>
+Node<T>* Node<T>::DeleteNode(T data){
+	Node<T> *tempPtr = this;
+
+	if(data == this->data){
 	
-	ptr1 = p->next;
-	p->next = NULL;
-
-	//沿链表每向前移动一个结点,逆转一条链
-	while (ptr1)
-	{
-		ptr2 = ptr1 -> next;
-		ptr1 -> next = p;//逆转
-		p = ptr1;
-		ptr1 = ptr2;
+		tempPtr = tempPtr->next;
+		return tempPtr;
 	}
-	delete ptr1, ptr2;
-	return p;
-}
-*/
+	else{
+		Node<T> *lastPtr = tempPtr->next;
 
+		while(lastPtr->data !=data && lastPtr->next!=NULL){
+			tempPtr = lastPtr;
+			lastPtr = tempPtr->next;
+
+		}
+		if(lastPtr->next!=NULL){
+			tempPtr->next = lastPtr->next;
+		}
+		else if(lastPtr->data == data){
+			tempPtr->next = NULL;
+		}
+		delete lastPtr;
+
+		return this;
+	}
+
+}
+
+// reverse list as P
+template<typename T>
 void Node<T>::Reverse( Node<T> *&p)
 {
-    Node<T> *ptr1, *ptr2, *p;
+    Node<T> *ptr1,*ptr2;
 	
 	ptr1 = p->next;
 	p->next = NULL;
 
-	//沿链表每向前移动一个结点,逆转一条链
 	while (ptr1)
 	{
 		ptr2 = ptr1 -> next;
-		ptr1 -> next = p;//逆转
+		ptr1 -> next = p;
 		p = ptr1;
 		ptr1 = ptr2;
 	}
-	delete ptr1, ptr2;
+	delete ptr1;
+	delete ptr2;
 }
 
 #endif  // NODE_CLASS
