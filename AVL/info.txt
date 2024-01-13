@@ -1,0 +1,2 @@
+demo is base on CMU lecture-16 guide ,which no parent so cannot delete 
+Parent node is add by myself

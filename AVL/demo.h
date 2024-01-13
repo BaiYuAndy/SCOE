@@ -10,6 +10,7 @@ public:
 
 	Node *left;
 	Node *right;
+	Node *parent;
 
 	int height(Node *root);
 
@@ -27,10 +28,15 @@ public:
 	Node* rotateLeft(Node *root);
 	Node* rotateRight(Node *root);
 
+	Node* getNodeByValue(Node *root,int value);
+
+	Node* delNodeByValue(Node *root,int value);
+
 	Node(int value){
 		data = value;
 		left =NULL;
 		right=NULL;
+		parent = NULL;
 	}
 
 	void preOrder(Node* root);
@@ -87,6 +93,150 @@ bool Node::isRebalance(Node *root){
 
 	return false;
 }
+	
+Node* Node::getNodeByValue(Node *root,int value){
+	Node *pCur = NULL;
+
+	if(root->data == value)
+		pCur =root;
+	else if(root->data > value)
+		pCur = getNodeByValue(root->left,value);
+	else if(root->data < value)
+		pCur = getNodeByValue(root->right,value);
+
+	return pCur;
+}
+
+Node* Node::delNodeByValue(Node *root,int value){
+	Node *pCur = getNodeByValue(root,value);
+	Node *parentCur = pCur->parent;
+
+	if(pCur->left ==NULL && pCur->right==NULL){
+	  if(parentCur!=NULL){
+	  	if(parentCur->data > pCur->data)
+	  		parentCur->left = NULL;
+	  	else
+	  		parentCur->right = NULL;
+		}
+		else{
+			return NULL;
+		}
+
+	  delete(pCur);
+
+	}
+	else if(pCur->left!=NULL && pCur->right==NULL){
+		if(parentCur!=NULL){
+			if(parentCur->data > pCur->data)
+	  		parentCur->left = pCur->left;
+	  	else
+	  		parentCur->right = pCur->left;
+
+	  	(pCur->left)->parent = parentCur;
+		}
+		else{
+			root = pCur->left;
+			return root;
+		}
+
+	  delete(pCur);
+	}
+	else if(pCur->left==NULL && pCur->right !=NULL){
+		if(parentCur!=NULL){
+			if(parentCur->data > pCur->data)
+	  		parentCur->left = pCur->right;
+	  	else
+	  		parentCur->right = pCur->right;
+	
+	  	(pCur->right)->parent = parentCur;
+	  }
+		else{
+			root = pCur->right;
+			return root;
+		}
+
+	  delete(pCur);
+	}
+	else{
+		if(pCur->left!=NULL){
+			Node* pNext = pCur->left;
+
+			while(pNext->right!=NULL){
+				pNext = pNext->right;
+			}
+			
+			pCur->data = pNext->data;
+			parentCur = pNext->parent;
+			if(parentCur!=NULL){
+				if(parentCur->data > pCur->data){
+					if(pNext->left!=NULL)
+						parentCur->left = pNext->left;
+	  			else
+	  				parentCur->left = NULL;
+				}
+	  		else{
+	  			if(pNext->left!=NULL)
+						parentCur->right = pNext->left;
+					else
+	  				parentCur->right = NULL;
+	  		}
+	  	}
+			//delete(pNext);
+			//cout<<parentCur->data<<endl;
+
+			
+		}
+	}
+
+	while(parentCur !=NULL ){
+
+		if(isRebalance(parentCur)){
+
+			parentCur=parentCur->parent;
+		}
+		else{
+			
+			int hl = parentCur->height(parentCur->left);
+			int hr = parentCur->height(parentCur->right);
+
+			if(hl+1 <hr){
+				parentCur = parentCur->rotateLeft(parentCur);
+
+				if(parentCur->parent !=NULL){
+					if((parentCur->parent)->data > parentCur->data){
+	  				(parentCur->parent)->left = parentCur;
+					}
+	  			else{
+	  				(parentCur->parent)->right = parentCur;
+	  			}
+				}
+				
+				parentCur = parentCur->parent;
+
+			}
+			else if(hl >hr+1){
+
+				parentCur = parentCur->rotateRight(parentCur);
+				
+				if(parentCur->parent !=NULL){
+					if((parentCur->parent)->data > parentCur->data){
+	  				(parentCur->parent)->left = parentCur;
+					}
+	  			else{
+	  				(parentCur->parent)->right = parentCur;
+	  			}
+				}
+				
+				parentCur = parentCur->parent;
+
+
+			}
+
+		}
+	}
+	return root;
+
+}
 
 Node* Node::sreachNode(int value){
 	Node *pCur = NULL;
@@ -135,10 +285,12 @@ Node* Node::insertNode(Node *root,int value){
 	else if(value < pCur->data){
 		pCur->left = pCur->insertNode(pCur->left,value);
 		pCur = pCur->rebalanceLeft(pCur);
+		(pCur->left)->parent = pCur;
 	}
 	else if(value > pCur->data){
 		pCur->right = pCur->insertNode(pCur->right,value);
 		pCur = rebalanceRight(pCur);
+		(pCur->right)->parent = pCur;
 	}
 
 	return pCur;
@@ -169,7 +321,7 @@ Node* Node::rebalanceLeft(Node *root){
 		return root;
  }
 
- Node* Node::rebalanceRight(Node *root){
+Node* Node::rebalanceRight(Node *root){
 	Node *l = root->left;
 	Node *r = root->right;
 
@@ -198,8 +350,17 @@ Node * Node::rotateLeft(Node *root){
 	Node *cur;
 
 	cur = root->right;
+
 	root->right = cur->left;
+	
+	if(cur->left!=NULL){
+		(cur->left)->parent = root;
+	}
+
 	cur->left = root;
+	cur->parent = root->parent;
+
+	root->parent = cur;
 
 	return cur;
 }
@@ -208,8 +369,17 @@ Node * Node::rotateRight(Node *root){
 	Node *cur;
 
 	cur = root->left;
+
 	root->left = cur->right;
+
+	if(cur->right!=NULL){
+		(cur->right)->parent = root;
+	}
+
 	cur->right = root;
+	cur->parent = root->parent;
+
+	root->parent = cur;
 
 	return cur;
 }
