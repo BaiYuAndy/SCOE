@@ -34,6 +34,16 @@ public:
 	
 	Node* rotateLeftLeft(Node *root);
 	Node* rotateRightRight(Node *root);
+
+	Node* searchNode(Node *root ,int value);
+
+	Node* deleteNode(Node &root,int value);
+
+	Node* successorNode(Node *root);
+
+	Node* deleteArrange(Node *root,Node* pReplace);
+
+	Node* rolateDelLeft(Node *root,int value);
 };
 
 void Node::preOrder(Node* root){
@@ -52,6 +62,34 @@ void Node::middleOrder(Node* root){
 		cout<<root->data<<'-'<<root->color<<'	';
 		middleOrder(root->right);
 	}
+}
+
+Node* Node::searchNode(Node *root,int value){
+	Node *pCur =NULL;
+	if(root ==NULL)
+		return NULL;
+	
+	if(root->data > value){
+		if(root->left ==NULL){
+			return NULL;
+		}
+		else{
+			pCur =  root->searchNode(root->left,value);
+		}
+	}
+	else if(root->data < value){
+		if(root->right ==NULL){
+			return NULL;
+		}
+		else{
+			pCur =  root->searchNode(root->right,value);
+		}
+	}
+	else{
+		return root;
+	}
+
+	return pCur;
 }
 
 Node* Node::findInsertPosition(Node *root,int value){
@@ -254,6 +292,179 @@ Node* Node::rotateRightRight(Node *root){
 	parentCur->parent = root;
 	
 	return root;
+}
+
+Node* Node::successorNode(Node* root){
+	Node *pCur;
+	if(root->left == NULL)
+		return root;
+	else
+		pCur = root->successorNode(root->left);
+
+	return pCur;
+}
+
+Node* Node::deleteNode(Node &root,int value){
+	Node *pCur ;//z
+	
+	pCur = root.searchNode(&root,value);
+
+	if(pCur==NULL)
+		return &root;
+
+	Node *pReplace;//y
+	if(pCur->left ==NULL|| pCur->right ==NULL){
+		pReplace = pCur;
+	}
+	else{
+		Node *pN = root.searchNode(&root,value);
+
+		pReplace= root.successorNode(pN->right);
+	}
+	//cout<<pReplace->data<<"\n";
+	Node *pReplaceNext =NULL;//x
+	if(pReplace->left!=NULL || pReplace->right!=NULL){
+	
+		if(pReplace->left!=NULL)
+			pReplaceNext = pReplace->left;
+		else
+			pReplaceNext = pReplace->right;
+	
+		pReplaceNext->parent = pReplace->parent;
+	}
+	
+	if(pReplace->parent==NULL)
+		root = *pReplaceNext;
+	else if(pReplace == (pReplace->parent)->left){
+		(pReplace->parent)->left = pReplaceNext;
+		if(pReplaceNext!=NULL)
+			pReplaceNext->parent = pReplace->parent;
+	}
+	else{
+		(pReplace->parent)->right = pReplaceNext;
+		if(pReplaceNext!=NULL)
+			pReplaceNext->parent = pReplace->parent;
+	}
+
+	if(pReplace!=pCur)
+		pCur->data = pReplace->data;
+	
+	if(pReplace->color == "black"){
+		//root = *(deleteArrange(root,pReplace, pReplaceNext));
+		if(pReplaceNext == NULL){
+
+			Node *pRoot = (root.deleteArrange(&root,pReplace));
+				return pRoot;
+		}
+		else{
+
+			Node *pRoot = (root.deleteArrange(&root,pReplaceNext));
+				return pRoot;
+		}
+	}
+
+	return &root;
+}
+
+bool dobuleBlack(Node &root){
+	if(root.left==NULL && root.right==NULL)
+		return true;
+	else if(root.left!=NULL && root.right!=NULL){
+		if((root.left)->color =="black" &&(root.right)->color =="black")
+			return true;
+		else
+			return false;
+	}
+	else
+		return false;
+}
+
+bool dobuleRed(Node &root){
+	if(root.left!=NULL && root.right!=NULL){
+		if((root.left)->color =="red" &&(root.right)->color =="red")
+			return true;
+		else
+			return false;
+	}
+	else
+		return false;
+}
+
+Node* Node::deleteArrange(Node *root,Node *pReplace){
+	
+	Node* pSplice;//w,x-NULL ddb node
+	
+	while(pReplace->parent!=NULL && pReplace->color == "black"){
+
+		if((pReplace->parent)->data > pReplace->data){
+			pSplice = (pReplace->parent)->right;
+
+			if(pSplice == NULL){
+				(pReplace->parent)->color = "black";
+				return root;
+			}
+	
+			if(pSplice->color=="red"){
+				pSplice->color = "black";
+				(pReplace->parent)->color ="red";
+	
+				Node *pParent = (pSplice->parent);
+				pParent = root->rolateDelLeft(root,(pSplice->parent)->data);
+
+				pSplice = (pReplace->parent)->right;
+				pSplice->parent = pReplace->parent;
+				//cout<<pSplice->data;
+			}
+
+			if(dobuleBlack(*pSplice)){
+				pSplice->color = (pSplice->parent)->color;
+				(pSplice->parent)->color = "black";
+				
+				pReplace = pReplace->parent;
+			}
+			
+			if(pSplice->color=="black" && dobuleRed(*pSplice)){
+				pSplice->color = pReplace->parent->color;
+				pReplace->parent->color = "black";
+				pSplice->right->color = "black";
+
+				pReplace->parent = rolateDelLeft(pReplace->parent,pReplace->parent->data);
+			
+			}
+          
+		}
+		pReplace = pReplace->parent;
+	}
+	
+	pReplace->color = "black";
+	
+	while(pReplace->parent!=NULL)
+		pReplace = pReplace->parent;
+
+	root = pReplace;
+
+	return root;
+}
+
+Node* Node::rolateDelLeft(Node *root,int value){
+
+	Node *pCur= root->searchNode(root,value);
+	
+	Node *pR = pCur->right;
+	pR->parent = pCur->parent;
+	
+	if(pR->left!=NULL){
+		pCur->right = pR->left;
+		(pR->left)->parent = pCur;
+	}
+	else
+		pCur->right = NULL;
+	
+	Node *pl = pCur;
+	pR->left = pl;
+	pCur->parent = pR;
+
+	return pR;
 }
 
 #endif

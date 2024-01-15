@@ -1,4 +1,6 @@
 #include "demo.h"
+#include <cstdlib>
+#include <ctime>
 
 using namespace std;
 
@@ -42,47 +44,39 @@ Node* insertToTree(Node *root,int value){
 
 int main(){
 
-	Node *root = new Node(15);
+	Node *root = new Node(10);
 	root->color = "black";
 
-	int dataList[8] = {10,12,8,6,16,18,24,19};
+	int dataList[10] = {20,40,30,35,50,36,21,32,26};
 
-	/*int i=0;
-	while(i<8){
+	int i=0;
+	while(i<6){
 		root = insertToTree(root,dataList[i]);
 		i++;
-	}*/
-
-	for(int i=1;i<20;i++){
-		root = insertToTree(root,i+15);
 	}
 
-	/*Node *pN;
-	pN = addToTree(*root,10);
-	root = reBalance(pN,10);
+	/*srand(unsigned(time(0)));
 
-	pN = addToTree(*root,12);
-	root = reBalance(pN,12);
+	const int MAX = 10000000;
+	const int MIN = 100;
 
-	pN = addToTree(*root,8);
-	root = reBalance(pN,8);
+	int a = 0;
+	//int n = 10000;
+	for(int i=0;i<MAX;i++){
+		a = (rand()%(MAX-MIN+1) +MIN);
 
-	pN = addToTree(*root,6);
-	root = reBalance(pN,6);
+		root = insertToTree(root,a);
+	}*/
 
-	pN =addToTree(*root,16);
-	root = reBalance(pN,16);
+	/*root = (root->deleteNode(*root,8));
+	root = (root->deleteNode(*root,15));
+	root = (root->deleteNode(*root,6));
+	root = (root->deleteNode(*root,12));*/
+	root = root->deleteNode(*root,10);
+	//root = insertToTree(root,10);
+	root = root->deleteNode(*root,20);
+	root = root->deleteNode(*root,30);
 
-	pN =addToTree(*root,18);
-	root = reBalance(pN,18);
-
-	pN=addToTree(*root,24);
-	root = reBalance(pN,24);
-
-	pN=addToTree(*root,19);
-	root = reBalance(pN,19);*/
-
-	
 	root->preOrder(root);
 	cout<<"\n";
 	root->middleOrder(root);

@@ -32,6 +32,8 @@ public:
 
 	Node* delNodeByValue(Node *root,int value);
 
+	Node* searchNode(Node *root ,int value);
+
 	Node(int value){
 		data = value;
 		left =NULL;
@@ -59,6 +61,34 @@ void Node::middleOrder(Node* root){
 		cout<<root->data<<' ';
 		middleOrder(root->right);
 	}
+}
+
+Node* Node::searchNode(Node *root,int value){
+	Node *pCur =NULL;
+	if(root ==NULL)
+		return NULL;
+	
+	if(root->data > value){
+		if(root->left ==NULL){
+			return NULL;
+		}
+		else{
+			pCur =  root->searchNode(root->left,value);
+		}
+	}
+	else if(root->data < value){
+		if(root->right ==NULL){
+			return NULL;
+		}
+		else{
+			pCur =  root->searchNode(root->right,value);
+		}
+	}
+	else{
+		return root;
+	}
+
+	return pCur;
 }
 
 int Node::height(Node *root){
