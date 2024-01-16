@@ -77,6 +77,16 @@ int main(){
 	root = root->deleteNode(*root,20);
 	root = root->deleteNode(*root,30);
 
+	root = insertToTree(root,42);
+	root = root->deleteNode(*root,35);
+	
+	root->preOrder(root);
+	cout<<"\n";
+	root->middleOrder(root);
+	cout<<"\n";
+
+	root = root->deleteNode(*root,36);
+
 	root->preOrder(root);
 	cout<<"\n";
 	root->middleOrder(root);
