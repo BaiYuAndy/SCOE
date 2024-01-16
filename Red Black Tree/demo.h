@@ -407,6 +407,7 @@ Node* Node::deleteArrange(Node *root,Node *pReplace){
 			}
 			
 			if(pSplice->color=="red"){
+
 				pSplice->color = "black";
 				(pReplace->parent)->color ="red";
 	
@@ -417,36 +418,96 @@ Node* Node::deleteArrange(Node *root,Node *pReplace){
 				pSplice->parent = pReplace->parent;
 			}
 
-			if(dobuleBlack(*pSplice)){
-				pSplice->color = (pSplice->parent)->color;
-				(pSplice->parent)->color = "black";
+			if(dobuleBlack(*pSplice) && pSplice->color=="black"){
+				pSplice->color = "red";
 				
 				pReplace = pReplace->parent;
 			}
-			else if(/*(pSplice->right)->color == "black" ||*/ (pSplice->right)==NULL){
+			else if(pSplice->color=="black" && (pSplice->right)==NULL){
 
 				(pSplice->left)->color = "black";
 				pSplice->color = "red";
+				
+				(pReplace->parent)->right = (pReplace->parent)->rolateDelRight(pSplice, pSplice->data);
 
-				//Node *parent = pReplace->parent;
+				pSplice = (pReplace->parent)->right;
+			}
+			else if( pSplice->color=="black" && (pSplice->right)->color == "black"){
+
+				(pSplice->left)->color = "black";
+				pSplice->color = "red";
 				
 				(pReplace->parent)->right = (pReplace->parent)->rolateDelRight(pSplice, pSplice->data);
 
 				pSplice = (pReplace->parent)->right;
 			}
 			
-			//if(pSplice->color=="black" && dobuleRed(*pSplice)){
 			if(pSplice->color=="black" && (pSplice->right)->color == "red"){
+
 				pSplice->color = pReplace->parent->color;
 				pReplace->parent->color = "black";
 				pSplice->right->color = "black";
-
+				
 				(pReplace->parent) = rolateDelLeft(pReplace->parent,pReplace->parent->data);
-			
+				break;
 			}
           
 		}
-		pReplace = pReplace->parent;
+		else if((pReplace->parent)->data < pReplace->data){
+
+			pSplice = (pReplace->parent)->left;
+
+			if(pSplice == NULL){
+				(pReplace->parent)->color = "black";
+				return root;
+			}
+			
+			if(pSplice->color=="red"){
+				pSplice->color = "black";
+				(pReplace->parent)->color ="red";
+
+				Node *pParent = (pSplice->parent);
+				pParent = root->rolateDelRight(root,(pSplice->parent)->data);
+				
+				pSplice = (pReplace->parent)->left;
+				pSplice->parent = pReplace->parent;
+			}
+
+			if(dobuleBlack(*pSplice) && pSplice->color=="black" ){
+
+				pSplice->color = "red";
+				
+				pReplace = pReplace->parent;
+			}
+			else if(pSplice->color=="black" && (pSplice->left)==NULL){
+
+				(pSplice->right)->color = "black";
+				pSplice->color = "red";
+				
+				(pReplace->parent)->left = (pReplace->parent)->rolateDelLeft(pSplice, pSplice->data);
+
+				pSplice = (pReplace->parent)->left;
+			}
+			else if( pSplice->color=="black" && (pSplice->left)->color == "black"){
+
+				(pSplice->right)->color = "black";
+				pSplice->color = "red";
+				
+				(pReplace->parent)->left = (pReplace->parent)->rolateDelLeft(pSplice, pSplice->data);
+
+				pSplice = (pReplace->parent)->left;
+			}
+
+			if(pSplice->color=="black" && (pSplice->left)->color == "red"){
+				pSplice->color = pReplace->parent->color;
+				pReplace->parent->color = "black";
+				pSplice->left->color = "black";
+
+				(pReplace->parent) = rolateDelRight(pReplace->parent,pReplace->parent->data);
+				break;
+			}
+		}
+
 	}
 	
 	pReplace->color = "black";

@@ -68,25 +68,23 @@ int main(){
 		root = insertToTree(root,a);
 	}*/
 
-	/*root = (root->deleteNode(*root,8));
-	root = (root->deleteNode(*root,15));
-	root = (root->deleteNode(*root,6));
-	root = (root->deleteNode(*root,12));*/
 	root = root->deleteNode(*root,10);
-	//root = insertToTree(root,10);
+	root = insertToTree(root,10);
 	root = root->deleteNode(*root,20);
 	root = root->deleteNode(*root,30);
 
-	root = insertToTree(root,42);
-	root = root->deleteNode(*root,35);
-	
-	root->preOrder(root);
-	cout<<"\n";
-	root->middleOrder(root);
-	cout<<"\n";
+	root = root->deleteNode(*root,10);
+	root = insertToTree(root,15);
+
+	root = root->deleteNode(*root,50);
+
+	root = insertToTree(root,18);
+	root = root->deleteNode(*root,40);
 
 	root = root->deleteNode(*root,36);
-
+	
+	root = root->deleteNode(*root,35);
+	
 	root->preOrder(root);
 	cout<<"\n";
 	root->middleOrder(root);
