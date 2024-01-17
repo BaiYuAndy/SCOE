@@ -8,558 +8,304 @@ class Node{
 public:
 	string color;
 	int data;
-
 	Node* left;
 	Node* right;
 	Node* parent;
 
 	Node(int value){
-		data = value;
+		color = "red";
 		left = NULL;
 		right = NULL;
 		parent = NULL;
-		color = "red";
+
+		data = value;
 	}
-
-	Node *insertNode(Node* root,int value);
-	Node *findInsertPosition(Node *root,int value);
-
-	void preOrder(Node* root);
-	void middleOrder(Node* root);
-
-	Node* arrangeNode(Node *root,int value);
-
-	Node* rotateLeftRight(Node *root);
-	Node* rotateRightLeft(Node *root);
-	
-	Node* rotateLeftLeft(Node *root);
-	Node* rotateRightRight(Node *root);
-
-	Node* searchNode(Node *root ,int value);
-
-	Node* deleteNode(Node &root,int value);
-
-	Node* successorNode(Node *root);
-
-	Node* deleteArrange(Node *root,Node* pReplace);
-
-	Node* rolateDelLeft(Node *root,int value);
-
-	Node* rolateDelRight(Node *root,int value);
 };
 
-void Node::preOrder(Node* root){
-	if(root!=NULL){
-		cout<<root->data<<'-'<<root->color<<'	';
+class RBT{
+public:
+	Node *root;
+	Node *NIL;
 
-		preOrder(root->left);
-		preOrder(root->right);
+	RBT(){
+		NIL = new Node(0);
+		NIL->color = "black";
+
+		root = NIL;
+	}
+
+	RBT* insertNode(RBT* t,Node *z);
+	void inOrder(RBT *t, Node *n);
+	void preOrder(RBT *t, Node *n);
+
+	void insertion_fixup(RBT *t, Node *z);
+	void left_rotate(RBT *t, Node *x);
+	void right_rotate(RBT *t, Node *x);
+	void rb_delete_fixup(RBT *t, Node *x);
+	void rb_delete(RBT *t, Node *x);
+
+	void rb_transplant(RBT *t, Node *u, Node *v);
+
+	Node* searchNode(RBT* t, Node* root,int value);
+
+	Node* minimum(RBT *t, Node *x);
+};
+
+RBT* RBT::insertNode(RBT* t,Node *z){
+	Node *y = t->NIL;
+	Node *temp = t->root;
+
+	while(temp != t->NIL) {
+  		y = temp;
+  		if(z->data < temp->data)
+    		temp = temp->left;
+  		else
+    		temp = temp->right;
+	}
+	
+	z->parent = y;
+
+	if(y == t->NIL) { //newly added node is root
+	 	t->root = z;
+	}
+	else if(z->data < y->data) //data of child is less than its parent, left child
+	  	y->left = z;
+	else
+	  	y->right = z;
+	
+	z->right = t->NIL;
+	z->left = t->NIL;
+
+	t->insertion_fixup(t, z);
+
+	return t;
+}
+
+void RBT::inOrder(RBT *t, Node *n) {
+	if(n != t->NIL) {
+  		inOrder(t, n->left);
+  		cout<<n->data<<'-'<<n->color<<'	';
+  		inOrder(t, n->right);
 	}
 }
 
-void Node::middleOrder(Node* root){
-	if(root!=NULL){
-
-		middleOrder(root->left);
-		cout<<root->data<<'-'<<root->color<<'	';
-		middleOrder(root->right);
+void RBT::preOrder(RBT *t, Node *n) {
+	if(n != t->NIL) {
+		cout<<n->data<<'-'<<n->color<<'	';
+  		preOrder(t, n->left);
+  		preOrder(t, n->right);
 	}
 }
 
-Node* Node::searchNode(Node *root,int value){
-	Node *pCur =NULL;
-	if(root ==NULL)
+Node* RBT::searchNode(RBT* t,Node* root, int value){
+	if(root == t->NIL)
 		return NULL;
-	
-	if(root->data > value){
-		if(root->left ==NULL){
-			return NULL;
-		}
-		else{
-			pCur =  root->searchNode(root->left,value);
-		}
-	}
-	else if(root->data < value){
-		if(root->right ==NULL){
-			return NULL;
-		}
-		else{
-			pCur =  root->searchNode(root->right,value);
-		}
-	}
-	else{
-		return root;
-	}
 
-	return pCur;
-}
-
-Node* Node::findInsertPosition(Node *root,int value){
-	Node *pCur =NULL;
-	if(root ==NULL)
-		return NULL;
-	
-	if(root->data > value){
-		if(root->left ==NULL){
-			return root;
-		}
-		else{
-			pCur =  root->findInsertPosition(root->left,value);
-		}
-	}
-	else if(root->data < value){
-		if(root->right ==NULL){
-			return root;
-		}
-		else{
-			pCur =  root->findInsertPosition(root->right,value);
-		}
-	}
-	else{
-		return root;
-	}
-
-	return pCur;
-}
-
-Node* Node::insertNode(Node* root,int value){
-	if(root ==NULL){
-		root = new Node(value);
-	}
-	else if(root->data >value){
-		root->left = root->insertNode(root->left,value);
-
-		(root->left)->parent = root;
-	}
-	else if(root->data <value){
-		root->right = root->insertNode(root->right,value);
-
-		(root->right)->parent = root;
-	}
-	else{
-		root->data = value;
-	}
-
-	return root;
-}
-
-Node* Node::arrangeNode(Node *root,int value){//root is middle node in CMU example
 	Node *pCur;
-
-	Node *parentCur;
-	parentCur = root->parent;
-
-	if(parentCur->data > root->data){
-
-		if(value > root->data){
-	
-			pCur = root->right;
-	
-			if(root->color =="red" && pCur->color =="red"){
-	
-				parentCur = root->rotateLeftRight(root);
-			}
-	
-			if(parentCur->parent ==NULL)
-				parentCur->color ="black";
-		}
-		else if(value < root->data){
-	
-			pCur = root->left;
-	
-			if(root->color =="red" && pCur->color =="red"){
-	
-				parentCur = root->rotateLeftLeft(root);
-				
-			}
-	
-			if(parentCur->parent ==NULL)
-				parentCur->color ="black";
-		}
-	}
-	else{
-		if(value > root->data){
-		
-			pCur = root->right;
-	
-			if(root->color =="red" && pCur->color =="red"){
-	
-				parentCur = root->rotateRightRight(root);
-			}
-	
-			if(parentCur->parent ==NULL)
-				parentCur->color ="black";
-		}
-		else if(value < root->data){
-			
-			pCur = root->left;
-			
-			if(root->color =="red" && pCur->color =="red"){
-	
-				parentCur = root->rotateRightLeft(root);
-			}
-	
-			if(parentCur->parent ==NULL)
-				parentCur->color ="black";
-		}
-	}
-	return parentCur;
-
-}
-
-Node* Node::rotateLeftRight(Node *root){
-	Node *parentCur = root->parent;
-
-	Node *pCur = root->right;
-
-	parentCur->left = pCur->right;
-
-	root->right = pCur->left;
-	
-	pCur->left = root;
-	pCur->right = parentCur;
-
-	pCur->color = "red";
-	root->color ="black";
-	parentCur->color = "black";
-
-	pCur->parent = parentCur->parent;
-
-	root->parent = pCur;
-	parentCur->parent  =pCur;
-
-	return pCur;
-}
-
-Node* Node::rotateRightLeft(Node *root){
-
-	Node *parentCur = root->parent;
-
-	Node *pCur = root->left;
-
-	parentCur->right = pCur->left;
-
-	root->left = pCur->right;
-	
-	pCur->left = parentCur;
-	pCur->right = root;
-
-	pCur->color = "red";
-	root->color ="black";
-	parentCur->color = "black";
-
-	pCur->parent = parentCur->parent;
-
-	root->parent = pCur;
-	parentCur->parent  =pCur;
-
-	return pCur;
-}
-
-Node* Node::rotateLeftLeft(Node *root){
-	Node *parentCur = root->parent;
-	
-	Node *pCur = root->left;
-
-	parentCur->left = root->right;
-	
-	root->right = parentCur;
-
-	pCur->color = "black";
-	root->color ="red";
-	parentCur->color = "black";
-
-	root->parent = parentCur->parent;
-
-	parentCur->parent = root;
-	
-	return root;
-}
-
-Node* Node::rotateRightRight(Node *root){
-	Node *parentCur = root->parent;
-	
-	Node *pCur = root->right;
-
-	parentCur->right = root->left;
-	
-	root->left = parentCur;
-
-	pCur->color = "black";
-	root->color ="red";
-	parentCur->color = "black";
-
-	root->parent = parentCur->parent;
-
-	parentCur->parent = root;
-	
-	return root;
-}
-
-Node* Node::successorNode(Node* root){
-	Node *pCur;
-	if(root->left == NULL)
+	if(value == root->data)
 		return root;
-	else
-		pCur = root->successorNode(root->left);
+	else if(value < root->data)
+		pCur = searchNode(t,root->left,value);
+	else if(value > root->data)
+		pCur = searchNode(t,root->right,value);
 
 	return pCur;
 }
 
-Node* Node::deleteNode(Node &root,int value){
-	Node *pCur ;//z
-	
-	pCur = root.searchNode(&root,value);
-
-	if(pCur==NULL)
-		return &root;
-
-	Node *pReplace;//y
-	if(pCur->left ==NULL|| pCur->right ==NULL){
-		pReplace = pCur;
-	}
-	else{
-		Node *pN = root.searchNode(&root,value);
-
-		pReplace= root.successorNode(pN->right);
-	}
-	
-	Node *pReplaceNext =NULL;//x
-	if(pReplace->left!=NULL || pReplace->right!=NULL){
-	
-		if(pReplace->left!=NULL)
-			pReplaceNext = pReplace->left;
-		else
-			pReplaceNext = pReplace->right;
-	
-		pReplaceNext->parent = pReplace->parent;
-	}
-	
-	if(pReplace->parent==NULL)
-		root = *pReplaceNext;
-	else if(pReplace == (pReplace->parent)->left){
-		(pReplace->parent)->left = pReplaceNext;
-		if(pReplaceNext!=NULL)
-			pReplaceNext->parent = pReplace->parent;
-	}
-	else{
-		(pReplace->parent)->right = pReplaceNext;
-		if(pReplaceNext!=NULL)
-			pReplaceNext->parent = pReplace->parent;
-	}
-
-	if(pReplace!=pCur)
-		pCur->data = pReplace->data;
-	
-	if(pReplace->color == "black"){
-		
-		if(pReplaceNext == NULL){
-
-			Node *pRoot = (root.deleteArrange(&root,pReplace));
-				return pRoot;
-		}
-		else{
-
-			Node *pRoot = (root.deleteArrange(&root,pReplaceNext));
-				return pRoot;
-		}
-	}
-
-	return &root;
+void RBT::left_rotate(RBT *t, Node *x) {
+    Node *y = x->right;
+    x->right = y->left;
+    if(y->left != t->NIL) {
+      y->left->parent = x;
+    }
+    y->parent = x->parent;
+    if(x->parent == t->NIL) { //x is root
+      t->root = y;
+    }
+    else if(x == x->parent->left) { //x is left child
+      x->parent->left = y;
+    }
+    else { //x is right child
+      x->parent->right = y;
+    }
+    y->left = x;
+    x->parent = y;
 }
 
-bool dobuleBlack(Node &root){
-	if(root.left==NULL && root.right==NULL)
-		return true;
-	else if(root.left!=NULL && root.right!=NULL){
-		if((root.left)->color =="black" &&(root.right)->color =="black")
-			return true;
-		else
-			return false;
-	}
+void RBT::right_rotate(RBT *t, Node *x) {
+    Node *y = x->left;
+    x->left = y->right;
+    if(y->right != t->NIL) {
+      y->right->parent = x;
+    }
+    y->parent = x->parent;
+    if(x->parent == t->NIL) { //x is root
+      t->root = y;
+    }
+    else if(x == x->parent->right) { //x is left child
+      x->parent->right = y;
+    }
+    else { //x is right child
+      x->parent->left = y;
+    }
+    y->right = x;
+    x->parent = y;
+}
+
+void RBT::insertion_fixup(RBT *t, Node *z) {
+    while(z->parent->color == "red") {
+      if(z->parent == z->parent->parent->left) { //z.parent is the left child
+    
+        Node *y = z->parent->parent->right; //uncle of z
+    
+        if(y->color == "red") { //case 1
+          z->parent->color = "black";
+          y->color = "black";
+          z->parent->parent->color = "red";
+          z = z->parent->parent;
+        }
+        else { //case2 or case3
+          if(z == z->parent->right) { //case2
+            z = z->parent; //marked z.parent as new z
+            left_rotate(t, z);
+          }
+          //case3
+          z->parent->color = "black"; //made parent black
+          z->parent->parent->color = "red"; //made parent red
+          right_rotate(t, z->parent->parent);
+        }
+      }
+      else { //z.parent is the right child
+        Node *y = z->parent->parent->left; //uncle of z
+    
+        if(y->color == "red") {
+          z->parent->color = "black";
+          y->color = "black";
+          z->parent->parent->color = "red";
+          z = z->parent->parent;
+        }
+        else {
+          if(z == z->parent->left) {
+            z = z->parent; //marked z.parent as new z
+            right_rotate(t, z);
+          }
+          z->parent->color = "black"; //made parent black
+          z->parent->parent->color = "red"; //made parent red
+          left_rotate(t, z->parent->parent);
+        }
+      }
+    }
+    t->root->color = "black";
+}
+
+void RBT::rb_transplant(RBT *t, Node *u, Node *v) {
+	if(u->parent == t->NIL)
+	  t->root = v;
+	else if(u == u->parent->left)
+	  u->parent->left = v;
 	else
-		return false;
+	  u->parent->right = v;
+	v->parent = u->parent;
 }
 
-bool dobuleRed(Node &root){
-	if(root.left!=NULL && root.right!=NULL){
-		if((root.left)->color =="red" &&(root.right)->color =="red")
-			return true;
-		else
-			return false;
-	}
-	else
-		return false;
+Node* RBT::minimum(RBT *t, Node *x) {
+	while(x->left != t->NIL)
+	  x = x->left;
+	return x;
 }
 
-Node* Node::deleteArrange(Node *root,Node *pReplace){
-	
-	Node* pSplice;//w,x-NULL ddb node
+void RBT::rb_delete(RBT *t, Node *z) {
+	Node *y = z;
+	Node *x;
+	string y_orignal_color = y->color;
 
-	while(pReplace->parent!=NULL && pReplace->color == "black"){
-
-		if((pReplace->parent)->data > pReplace->data){
-			pSplice = (pReplace->parent)->right;
-
-			if(pSplice == NULL){
-				(pReplace->parent)->color = "black";
-				return root;
-			}
-			
-			if(pSplice->color=="red"){
-
-				pSplice->color = "black";
-				(pReplace->parent)->color ="red";
-	
-				Node *pParent = (pSplice->parent);
-				pParent = root->rolateDelLeft(root,(pSplice->parent)->data);
-
-				pSplice = (pReplace->parent)->right;
-				pSplice->parent = pReplace->parent;
-			}
-
-			if(dobuleBlack(*pSplice) && pSplice->color=="black"){
-				pSplice->color = "red";
-				
-				pReplace = pReplace->parent;
-			}
-			else if(pSplice->color=="black" && (pSplice->right)==NULL){
-
-				(pSplice->left)->color = "black";
-				pSplice->color = "red";
-				
-				(pReplace->parent)->right = (pReplace->parent)->rolateDelRight(pSplice, pSplice->data);
-
-				pSplice = (pReplace->parent)->right;
-			}
-			else if( pSplice->color=="black" && (pSplice->right)->color == "black"){
-
-				(pSplice->left)->color = "black";
-				pSplice->color = "red";
-				
-				(pReplace->parent)->right = (pReplace->parent)->rolateDelRight(pSplice, pSplice->data);
-
-				pSplice = (pReplace->parent)->right;
-			}
-			
-			if(pSplice->color=="black" && (pSplice->right)->color == "red"){
-
-				pSplice->color = pReplace->parent->color;
-				pReplace->parent->color = "black";
-				pSplice->right->color = "black";
-				
-				(pReplace->parent) = rolateDelLeft(pReplace->parent,pReplace->parent->data);
-				break;
-			}
-          
-		}
-		else if((pReplace->parent)->data < pReplace->data){
-
-			pSplice = (pReplace->parent)->left;
-
-			if(pSplice == NULL){
-				(pReplace->parent)->color = "black";
-				return root;
-			}
-			
-			if(pSplice->color=="red"){
-				pSplice->color = "black";
-				(pReplace->parent)->color ="red";
-
-				Node *pParent = (pSplice->parent);
-				pParent = root->rolateDelRight(root,(pSplice->parent)->data);
-				
-				pSplice = (pReplace->parent)->left;
-				pSplice->parent = pReplace->parent;
-			}
-
-			if(dobuleBlack(*pSplice) && pSplice->color=="black" ){
-
-				pSplice->color = "red";
-				
-				pReplace = pReplace->parent;
-			}
-			else if(pSplice->color=="black" && (pSplice->left)==NULL){
-
-				(pSplice->right)->color = "black";
-				pSplice->color = "red";
-				
-				(pReplace->parent)->left = (pReplace->parent)->rolateDelLeft(pSplice, pSplice->data);
-
-				pSplice = (pReplace->parent)->left;
-			}
-			else if( pSplice->color=="black" && (pSplice->left)->color == "black"){
-
-				(pSplice->right)->color = "black";
-				pSplice->color = "red";
-				
-				(pReplace->parent)->left = (pReplace->parent)->rolateDelLeft(pSplice, pSplice->data);
-
-				pSplice = (pReplace->parent)->left;
-			}
-
-			if(pSplice->color=="black" && (pSplice->left)->color == "red"){
-				pSplice->color = pReplace->parent->color;
-				pReplace->parent->color = "black";
-				pSplice->left->color = "black";
-
-				(pReplace->parent) = rolateDelRight(pReplace->parent,pReplace->parent->data);
-				break;
-			}
-		}
-
+	if(z->left == t->NIL) {
+  		x = z->right;
+  		rb_transplant(t, z, z->right);
 	}
-	
-	pReplace->color = "black";
-	
-	while(pReplace->parent!=NULL)
-		pReplace = pReplace->parent;
-
-	root = pReplace;
-
-	return root;
+	else if(z->right == t->NIL) {
+  		x = z->left;
+  		rb_transplant(t, z, z->left);
+	}
+	else {
+  		y = minimum(t, z->right);
+  		y_orignal_color = y->color;
+  		x = y->right;
+  		if(y->parent == z) {
+    		x->parent = z;
+  		}
+  		else {
+    		rb_transplant(t, y, y->right);
+    		y->right = z->right;
+    		y->right->parent = y;
+  		}
+  	
+  		rb_transplant(t, z, y);
+  		y->left = z->left;
+  		y->left->parent = y;
+  		y->color = z->color;
+	}
+	if(y_orignal_color == "black")
+  		rb_delete_fixup(t, x);
 }
 
-Node* Node::rolateDelLeft(Node *root,int value){
-
-	Node *pCur= root->searchNode(root,value);
-	
-	Node *pR = pCur->right;
-	pR->parent = pCur->parent;
-	
-	if(pR->left!=NULL){
-		pCur->right = pR->left;
-		(pR->left)->parent = pCur;
+void RBT::rb_delete_fixup(RBT *t, Node *x) {
+	while(x != t->root && x->color == "black") {
+  		if(x == x->parent->left) {
+    		Node *w = x->parent->right;
+    		if(w->color == "red") {
+      			w->color = "black";
+      			x->parent->color = "red";
+      			left_rotate(t, x->parent);
+      			w = x->parent->right;
+    		}
+    		if(w->left->color == "black" && w->right->color == "black") {
+      			w->color = "red";
+      			x = x->parent;
+    		}
+    		else {
+      			if(w->right->color == "black") {
+      			  	w->left->color = "black";
+      			  	w->color = "red";
+      			  	right_rotate(t, w);
+      			  	w = x->parent->right;
+      			}
+      			w->color = x->parent->color;
+      			x->parent->color = "black";
+      			w->right->color = "black";
+      			left_rotate(t, x->parent);
+      			x = t->root;
+    		}
+  		}
+  		else {
+    		Node *w = x->parent->left;
+    		if(w->color == "red") {
+      			w->color = "black";
+      			x->parent->color = "red";
+      			right_rotate(t, x->parent);
+      			w = x->parent->left;
+    		}
+    		if(w->right->color == "black" && w->left->color == "black") {
+      			w->color = "red";
+      			x = x->parent;
+    		}
+    		else{
+      			if(w->left->color == "black") {
+        			w->right->color = "black";
+        			w->color = "red";
+        			left_rotate(t, w);
+        			w = x->parent->left;
+      			}
+      			w->color = x->parent->color;
+      			x->parent->color = "black";
+      			w->left->color = "black";
+      			right_rotate(t, x->parent);
+      			x = t->root;
+    		}
+  		}
 	}
-	else
-		pCur->right = NULL;
-	
-	Node *pl = pCur;
-	pR->left = pl;
-	pCur->parent = pR;
-
-	return pR;
-}
-
-Node* Node::rolateDelRight(Node *root,int value){
-
-	Node *pCur= root->searchNode(root,value);
-	
-	Node *pR = pCur->left;
-	pR->parent = pCur->parent;
-	
-	if(pR->right!=NULL){
-		pCur->left = pR->right;
-		(pR->right)->parent = pCur;
-	}
-	else
-		pCur->left = NULL;
-	
-	Node *pl = pCur;
-	pR->right = pl;
-	pCur->parent = pR;
-
-	return pR;
+	x->color = "black";
 }
 
 #endif
+

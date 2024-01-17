@@ -2,93 +2,33 @@
 #include <cstdlib>
 #include <ctime>
 
+#define N 10000000
+
 using namespace std;
-
-Node *addToTree(Node& root,int value){
-	Node *pN = root.findInsertPosition(&root,value);
-	
-	if(pN!=NULL){
-		
-		root = *(root.insertNode(&root,value));
-	}
-
-	return pN;
-}
-
-Node *reBalance(Node *pN,int value){
-
-	while(pN->parent !=NULL){
-		pN = pN->arrangeNode(pN,value);
-
-		if(pN->parent!=NULL){
-			if( (pN->parent)->data> pN->data ){
-				(pN->parent)->left = pN;
-			}
-			else if( (pN->parent)->data < pN->data ){
-				(pN->parent)->right = pN;
-			}
-			pN = pN->parent;
-		}
-	}
-
-	return pN;
-}
-
-Node* insertToTree(Node *root,int value){
-	Node *pN;
-	pN = addToTree(*root,value);
-	root = reBalance(pN,value);
-
-	return root;
-}
 
 int main(){
 
-	Node *root = new Node(10);
-	root->color = "black";
+  RBT *root = new RBT();
 
-	int dataList[10] = {20,40,30,35,50,36,21,32,26};
+  Node *pN;
+  for(int i=1;i<N;i++){
+    pN = new Node(i);
 
-	int i=0;
-	while(i<6){
-		root = insertToTree(root,dataList[i]);
-		i++;
-	}
+    root = root->insertNode(root,pN);
+  }
 
-	/*srand(unsigned(time(0)));
+  Node *pD;// = root->searchNode(root,root->root,88);
+  for(int i=1;i<N-1;i++){
+    pD =root->searchNode(root,root->root,i);
+    
+    if(pD!=NULL)
+      root->rb_delete(root, pD);
+    
+  }
 
-	const int MAX = 10000000;
-	const int MIN = 100;
+  //root->rb_delete(root, pD);
+  root->preOrder(root, root->root);
+  cout<<"\n";
+  root->inOrder(root, root->root);
 
-	int a = 0;
-	//int n = 10000;
-	for(int i=0;i<MAX;i++){
-		a = (rand()%(MAX-MIN+1) +MIN);
-
-		root = insertToTree(root,a);
-	}*/
-
-	root = root->deleteNode(*root,10);
-	root = insertToTree(root,10);
-	root = root->deleteNode(*root,20);
-	root = root->deleteNode(*root,30);
-
-	root = root->deleteNode(*root,10);
-	root = insertToTree(root,15);
-
-	root = root->deleteNode(*root,50);
-
-	root = insertToTree(root,18);
-	root = root->deleteNode(*root,40);
-
-	root = root->deleteNode(*root,36);
-	
-	root = root->deleteNode(*root,35);
-	
-	root->preOrder(root);
-	cout<<"\n";
-	root->middleOrder(root);
-	cout<<"\n";
-
-	return 1;
 }
