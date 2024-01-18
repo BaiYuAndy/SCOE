@@ -1,4 +1,8 @@
 #include "demo.h"
+#include <cstdlib>
+#include <ctime>
+
+#define N 50
 
 using namespace std;
 
@@ -27,12 +31,14 @@ Node *reBalance(Node *pN,int value){
 			}
 			pN = pN->parent;
 		}
+
 	}
 
 	return pN;
 }
 
 Node* insertToTree(Node *root,int value){
+
 	Node *pN;
 	pN = addToTree(*root,value);
 	root = reBalance(pN,value);
@@ -40,53 +46,49 @@ Node* insertToTree(Node *root,int value){
 	return root;
 }
 
+
+
 int main(){
 
-	Node *root = new Node(15);
+	Node *root = new Node(10);
 	root->color = "black";
+	
+	//int dataList[N] = {20,40,30,35,50,36,21,32,26,15};
 
-	int dataList[8] = {10,12,8,6,16,18,24,19};
-
-	/*int i=0;
-	while(i<8){
-		root = insertToTree(root,dataList[i]);
+	/*int i=1;
+	int n =10;
+	while(i<n){
+		root = insertToTree(root,i+10);
 		i++;
-	}*/
+	}
+	*/
 
-	for(int i=1;i<20;i++){
-		root = insertToTree(root,i+15);
+	srand(unsigned(time(0)));
+
+	const int MAX = 10000000;
+	const int MIN = 1;
+
+	int a = 0;
+		for(int i=0;i<MAX;i++){
+		a = (rand()%(MAX-MIN+1) +MIN);
+		
+		root = insertToTree(root,a);
+		
 	}
 
-	/*Node *pN;
-	pN = addToTree(*root,10);
-	root = reBalance(pN,10);
-
-	pN = addToTree(*root,12);
-	root = reBalance(pN,12);
-
-	pN = addToTree(*root,8);
-	root = reBalance(pN,8);
-
-	pN = addToTree(*root,6);
-	root = reBalance(pN,6);
-
-	pN =addToTree(*root,16);
-	root = reBalance(pN,16);
-
-	pN =addToTree(*root,18);
-	root = reBalance(pN,18);
-
-	pN=addToTree(*root,24);
-	root = reBalance(pN,24);
-
-	pN=addToTree(*root,19);
-	root = reBalance(pN,19);*/
-
+	/*for(i=1;i<10;i++){
+		
+		root = root->deleteNode(*root,i+10);
+		
+	}*/
 	
+	//Node *pN = root->searchNode(root,25);
+	//cout<<pN->left->data;
+	/*
 	root->preOrder(root);
-	cout<<"\n";
+	cout<<"\n************\n";
 	root->middleOrder(root);
 	cout<<"\n";
-
+	*/
 	return 1;
 }
