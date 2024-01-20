@@ -1,34 +1,77 @@
-#include "demo.h"
 #include <cstdlib>
 #include <ctime>
+#include "demo.h"
 
 #define N 10000000
 
 using namespace std;
 
-int main(){
+Node *addToTree(Tree *root,int value){
+  Node *pN = new Node(value);
+  
+  root->leaf = root->insertLeaf(root,root->leaf,pN);
 
-  RBT *root = new RBT();
+  pN = root->searchNode(root,root->leaf,value);
+
+  return root->searchNode(root,root->leaf,value);;
+}
+
+Node *reBalance(Tree* root,Node *pN,int value){
+
+  while(pN->parent !=root->NIL){
+    pN = root->arrangeNode(root,pN,value);
+
+    if(pN->parent!=root->NIL){
+      if( (pN->parent)->data> pN->data ){
+        (pN->parent)->left = pN;
+      }
+      else if( (pN->parent)->data < pN->data ){
+        (pN->parent)->right = pN;
+      }
+      pN = pN->parent;
+    }
+
+  }
+
+  return pN;
+}
+
+void insertToTree(Tree *root,int value){
 
   Node *pN;
-  for(int i=1;i<N;i++){
-    pN = new Node(i);
+  pN = addToTree(root,value);
+  
+  if(pN->parent!=root->NIL)
+    root->leaf = reBalance(root,pN->parent,value);
+}
 
-    root = root->insertNode(root,pN);
+int main(){
+
+  Tree *root = new Tree();
+  
+  srand(unsigned(time(0)));
+  
+  const int MAX = N;
+  const int MIN = 1;
+
+  int a = 0;
+  for(int i=0;i<MAX;i++){
+    a = (rand()%(MAX-MIN+1) +MIN);
+    insertToTree(root,a);
   }
 
-  Node *pD;// = root->searchNode(root,root->root,88);
-  for(int i=1;i<N-1;i++){
-    pD =root->searchNode(root,root->root,i);
-    
-    if(pD!=NULL)
-      root->rb_delete(root, pD);
-    
+  Node *pD;
+  a = 0;
+  
+  for(int i=1;i<MAX;i++){
+    a = (rand()%(MAX-MIN+1) +MIN);
+    pD =root->searchNode(root,root->leaf,a);
+  
+      if(pD->data ==a){
+        
+        root->deleteNode(root, pD);
+      }
   }
-
-  //root->rb_delete(root, pD);
-  root->preOrder(root, root->root);
-  cout<<"\n";
-  root->inOrder(root, root->root);
-
+  
+  return 1;
 }

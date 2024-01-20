@@ -1,118 +1,386 @@
-#ifndef _MY_HEADFILE
-#define _MY_HEADFILE
+#ifndef _MY_TREEFILE
+#define _MY_TREEFILE
 #include <iostream>
 #include <string>
 using namespace std;
 
 class Node{
+
 public:
-	string color;
+
 	int data;
+	string colour;
 	Node* left;
 	Node* right;
 	Node* parent;
 
 	Node(int value){
-		color = "red";
 		left = NULL;
-		right = NULL;
-		parent = NULL;
+		parent=NULL;
+		right=NULL;
 
 		data = value;
+		colour = "red";
 	}
 };
 
-class RBT{
+class Tree{
 public:
-	Node *root;
+	Node *leaf;
 	Node *NIL;
 
-	RBT(){
+	Tree(){
 		NIL = new Node(0);
-		NIL->color = "black";
+		NIL->colour = "black";
 
-		root = NIL;
+		leaf = NIL;
 	}
 
-	RBT* insertNode(RBT* t,Node *z);
-	void inOrder(RBT *t, Node *n);
-	void preOrder(RBT *t, Node *n);
+	Node* insertLeaf(Tree *t,Node *root,Node *node);
+	void preOrder(Node *root);
+	void inOrder(Node *root);
 
-	void insertion_fixup(RBT *t, Node *z);
-	void left_rotate(RBT *t, Node *x);
-	void right_rotate(RBT *t, Node *x);
-	void rb_delete_fixup(RBT *t, Node *x);
-	void rb_delete(RBT *t, Node *x);
+	Node *searchNode(Tree *t,Node *root,int value);
 
-	void rb_transplant(RBT *t, Node *u, Node *v);
+	Node* arrangeNode(Tree *t,Node *root,int value);
 
-	Node* searchNode(RBT* t, Node* root,int value);
+	Node* rotateLeftRight(Node *root);
+	Node* rotateRightLeft(Node *root);
+	
+	Node* rotateLeftLeft(Node *root);
+	Node* rotateRightRight(Node *root);
+	
+	void deleteNode(Tree *t,Node *z);
+	Node* successorNode(Tree *t, Node *x);
 
-	Node* minimum(RBT *t, Node *x);
+	void deleteArrange(Tree *t,Node *x);
+	
+	void left_rotate(Tree *t, Node *x);
+	void right_rotate(Tree *t, Node *x);
+	//void rb_transplant(Tree *t, Node *u, Node *v);
+
 };
 
-RBT* RBT::insertNode(RBT* t,Node *z){
-	Node *y = t->NIL;
-	Node *temp = t->root;
+Node* Tree::insertLeaf(Tree *t,Node *root,Node *node){
 
-	while(temp != t->NIL) {
-  		y = temp;
-  		if(z->data < temp->data)
-    		temp = temp->left;
-  		else
-    		temp = temp->right;
+	if(root == NIL){
+		root = node;
+		root->left = NIL;
+		root->right = NIL;
+		root->parent = NIL;
 	}
+	else{
+		if(root->data > node->data){
+			root->left = insertLeaf(t,root->left,node);
+			root->left->parent = root;
+		}
+		else if(root->data < node->data){
+			root->right = insertLeaf(t,root->right,node);
+			root->right->parent =root;
+		}
+	}
+
+	return root;
+}
+
+Node* Tree::searchNode(Tree* t,Node* root, int value){
+	Node *pCur = root;
+  while (pCur != t->NIL) {
+    if (value < pCur->data) {
+      if (pCur->left == t->NIL)
+        break;
+      else
+        pCur = pCur->left;
+    } 
+    else if (value == pCur->data) {
+      break;
+    } 
+    else {
+      if (pCur->right == t->NIL)
+        break;
+      else
+        pCur = pCur->right;
+    }
+  }
+  return pCur;
+}
+
+Node* Tree::rotateLeftRight(Node *root){
+	Node *parentCur = root->parent;
+
+	Node *pCur = root->right;
+
+	parentCur->left = pCur->right;
+	(pCur->right)->parent = parentCur;
+
+	root->right = pCur->left;
+	(pCur->left)->parent = root;
 	
-	z->parent = y;
+	pCur->left = root;
+	pCur->right = parentCur;
 
-	if(y == t->NIL) { //newly added node is root
-	 	t->root = z;
-	}
-	else if(z->data < y->data) //data of child is less than its parent, left child
-	  	y->left = z;
-	else
-	  	y->right = z;
+	pCur->colour = "red";
+	root->colour ="black";
+	parentCur->colour = "black";
+
+	pCur->parent = parentCur->parent;
+
+	root->parent = pCur;
+	parentCur->parent  =pCur;
 	
-	z->right = t->NIL;
-	z->left = t->NIL;
-
-	t->insertion_fixup(t, z);
-
-	return t;
+	return pCur;
 }
 
-void RBT::inOrder(RBT *t, Node *n) {
-	if(n != t->NIL) {
-  		inOrder(t, n->left);
-  		cout<<n->data<<'-'<<n->color<<'	';
-  		inOrder(t, n->right);
-	}
-}
+Node* Tree::rotateRightLeft(Node *root){
 
-void RBT::preOrder(RBT *t, Node *n) {
-	if(n != t->NIL) {
-		cout<<n->data<<'-'<<n->color<<'	';
-  		preOrder(t, n->left);
-  		preOrder(t, n->right);
-	}
-}
+	Node *parentCur = root->parent;
 
-Node* RBT::searchNode(RBT* t,Node* root, int value){
-	if(root == t->NIL)
-		return NULL;
+	Node *pCur = root->left;
 
-	Node *pCur;
-	if(value == root->data)
-		return root;
-	else if(value < root->data)
-		pCur = searchNode(t,root->left,value);
-	else if(value > root->data)
-		pCur = searchNode(t,root->right,value);
+	parentCur->right = pCur->left;
+	(pCur->left)->parent = parentCur;
+
+	root->left = pCur->right;
+
+	(pCur->right)->parent = root;
+
+	pCur->left = parentCur;
+	pCur->right = root;
+
+	pCur->colour = "red";
+	root->colour ="black";
+	parentCur->colour = "black";
+
+	pCur->parent = parentCur->parent;
+
+	root->parent = pCur;
+	parentCur->parent  =pCur;
 
 	return pCur;
 }
 
-void RBT::left_rotate(RBT *t, Node *x) {
+Node* Tree::rotateLeftLeft(Node *root){
+	Node *parentCur = root->parent;
+	
+	Node *pCur = root->left;
+
+	parentCur->left = root->right;
+	
+	(root->right)->parent = parentCur;
+	
+	root->right = parentCur;
+
+	pCur->colour = "black";
+	root->colour ="red";
+	parentCur->colour = "black";
+
+	root->parent = parentCur->parent;
+
+	parentCur->parent = root;
+	
+	return root;
+}
+
+Node* Tree::rotateRightRight(Node *root){
+	Node *parentCur = root->parent;
+	
+	Node *pCur = root->right;
+
+	parentCur->right = root->left;
+	
+	(root->left)->parent = parentCur;
+
+	root->left = parentCur;
+
+	pCur->colour = "black";
+	root->colour ="red";
+	parentCur->colour = "black";
+
+	root->parent = parentCur->parent;
+
+	parentCur->parent = root;
+	
+	return root;
+}
+
+Node* Tree::arrangeNode(Tree *t,Node *root,int value){//root is middle node in CMU example
+	Node *pCur;
+
+	Node *parentCur;
+	parentCur = root->parent;
+
+	if(parentCur->data > root->data){
+
+		if(value > root->data){
+	
+			pCur = root->right;
+	
+			if(root->colour =="red" && pCur->colour =="red"){
+	
+				parentCur = rotateLeftRight(root);
+			}
+	
+			if(parentCur->parent ==t->NIL)
+				parentCur->colour ="black";
+		}
+		else if(value < root->data){
+	
+			pCur = root->left;
+	
+			if(root->colour =="red" && pCur->colour =="red"){
+	
+				parentCur = rotateLeftLeft(root);
+				
+			}
+	
+			if(parentCur->parent ==t->NIL)
+				parentCur->colour ="black";
+		}
+	}
+	else{
+		if(value > root->data){
+		
+			pCur = root->right;
+	
+			if(root->colour =="red" && pCur->colour =="red"){
+	
+				parentCur = rotateRightRight(root);
+			}
+	
+			if(parentCur->parent ==t->NIL)
+				parentCur->colour ="black";
+		}
+		else if(value < root->data){
+			
+			pCur = root->left;
+			
+			if(root->colour =="red" && pCur->colour =="red"){
+	
+				parentCur = rotateRightLeft(root);
+			}
+	
+			if(parentCur->parent ==t->NIL)
+				parentCur->colour ="black";
+		}
+	}
+	return parentCur;
+
+}
+
+/*void Tree::rb_transplant(Tree *t, Node *u, Node *v) {
+	if(u->parent == t->NIL)
+	  t->leaf = v;
+	else if(u == u->parent->left)
+	  u->parent->left = v;
+	else
+	  u->parent->right = v;
+	v->parent = u->parent;
+}*/
+
+Node* Tree::successorNode(Tree *t, Node *x) {
+	while(x->right != t->NIL)
+	  x = x->right;
+	return x;
+}
+
+void Tree::deleteNode(Tree *t, Node *z) {
+	Node *y;
+	if(z->left == t->NIL || z->right ==t->NIL)
+		y=z;
+	else
+		y = t->successorNode(t,z);
+
+	Node *x;
+
+	if(y->left !=t->NIL)
+		x = y->left;
+	else
+		x = y->right;
+
+	x->parent = y->parent;
+
+	if(y->parent == t->NIL)
+		t->leaf = x;
+	else{ 
+		if(y == y->parent->left)
+			y->parent->left =x;
+		else
+			y->parent->right =x;
+	}
+
+	if(y!=z)
+		z->data = y->data;
+
+	if(y->colour =="black"){
+		t->deleteArrange(t,x);
+	}
+
+}
+
+void Tree::deleteArrange(Tree *t,Node *x){
+
+	while(x != t->leaf && x->colour == "black") {
+  		if(x == x->parent->left) {
+    		Node *w = x->parent->right;
+    		if(w->colour == "red") {
+      			w->colour = "black";
+      			x->parent->colour = "red";
+      			left_rotate(t, x->parent);
+      			w = x->parent->right;
+    		}
+    		if(w->left->colour == "black" && w->right->colour == "black") {
+      			w->colour = "red";
+      			x = x->parent;
+    		}
+    		else {
+      			if(w->right->colour == "black") {
+      			  	w->left->colour = "black";
+      			  	w->colour = "red";
+      			  	right_rotate(t, w);
+      			  	w = x->parent->right;
+      			}
+      			w->colour = x->parent->colour;
+      			x->parent->colour = "black";
+      			w->right->colour = "black";
+      			left_rotate(t, x->parent);
+      			x = t->leaf;
+    		}
+  		}
+  		else if(x == x->parent->right){
+    		Node *w = x->parent->left;
+    		if(w->colour == "red") {
+      			w->colour = "black";
+      			x->parent->colour = "red";
+      			right_rotate(t, x->parent);
+      			w = x->parent->left;
+    		}
+    		if(w->right->colour == "black" && w->left->colour == "black") {
+      			w->colour = "red";
+      			x = x->parent;
+    		}
+    		else{
+      			if(w->left->colour == "black") {
+        			w->right->colour = "black";
+        			w->colour = "red";
+        			left_rotate(t, w);
+        			w = x->parent->left;
+      			}
+      			w->colour = x->parent->colour;
+      			x->parent->colour = "black";
+      			w->left->colour = "black";
+      			right_rotate(t, x->parent);
+      			x = t->leaf;
+    		}
+  		}
+  		else{
+
+  			break;
+  		}
+	}
+	x->colour = "black";
+}
+
+void Tree::left_rotate(Tree *t, Node *x) {
     Node *y = x->right;
     x->right = y->left;
     if(y->left != t->NIL) {
@@ -120,7 +388,7 @@ void RBT::left_rotate(RBT *t, Node *x) {
     }
     y->parent = x->parent;
     if(x->parent == t->NIL) { //x is root
-      t->root = y;
+      t->leaf = y;
     }
     else if(x == x->parent->left) { //x is left child
       x->parent->left = y;
@@ -132,7 +400,7 @@ void RBT::left_rotate(RBT *t, Node *x) {
     x->parent = y;
 }
 
-void RBT::right_rotate(RBT *t, Node *x) {
+void Tree::right_rotate(Tree *t, Node *x) {
     Node *y = x->left;
     x->left = y->right;
     if(y->right != t->NIL) {
@@ -140,7 +408,7 @@ void RBT::right_rotate(RBT *t, Node *x) {
     }
     y->parent = x->parent;
     if(x->parent == t->NIL) { //x is root
-      t->root = y;
+      t->leaf = y;
     }
     else if(x == x->parent->right) { //x is left child
       x->parent->right = y;
@@ -152,160 +420,20 @@ void RBT::right_rotate(RBT *t, Node *x) {
     x->parent = y;
 }
 
-void RBT::insertion_fixup(RBT *t, Node *z) {
-    while(z->parent->color == "red") {
-      if(z->parent == z->parent->parent->left) { //z.parent is the left child
-    
-        Node *y = z->parent->parent->right; //uncle of z
-    
-        if(y->color == "red") { //case 1
-          z->parent->color = "black";
-          y->color = "black";
-          z->parent->parent->color = "red";
-          z = z->parent->parent;
-        }
-        else { //case2 or case3
-          if(z == z->parent->right) { //case2
-            z = z->parent; //marked z.parent as new z
-            left_rotate(t, z);
-          }
-          //case3
-          z->parent->color = "black"; //made parent black
-          z->parent->parent->color = "red"; //made parent red
-          right_rotate(t, z->parent->parent);
-        }
-      }
-      else { //z.parent is the right child
-        Node *y = z->parent->parent->left; //uncle of z
-    
-        if(y->color == "red") {
-          z->parent->color = "black";
-          y->color = "black";
-          z->parent->parent->color = "red";
-          z = z->parent->parent;
-        }
-        else {
-          if(z == z->parent->left) {
-            z = z->parent; //marked z.parent as new z
-            right_rotate(t, z);
-          }
-          z->parent->color = "black"; //made parent black
-          z->parent->parent->color = "red"; //made parent red
-          left_rotate(t, z->parent->parent);
-        }
-      }
-    }
-    t->root->color = "black";
+void Tree::preOrder(Node *root){
+	if(root!=NIL){
+		cout<<root->data<<'-'<<root->colour<<' ';
+		preOrder(root->left);
+		preOrder(root->right);
+	}
 }
 
-void RBT::rb_transplant(RBT *t, Node *u, Node *v) {
-	if(u->parent == t->NIL)
-	  t->root = v;
-	else if(u == u->parent->left)
-	  u->parent->left = v;
-	else
-	  u->parent->right = v;
-	v->parent = u->parent;
-}
-
-Node* RBT::minimum(RBT *t, Node *x) {
-	while(x->left != t->NIL)
-	  x = x->left;
-	return x;
-}
-
-void RBT::rb_delete(RBT *t, Node *z) {
-	Node *y = z;
-	Node *x;
-	string y_orignal_color = y->color;
-
-	if(z->left == t->NIL) {
-  		x = z->right;
-  		rb_transplant(t, z, z->right);
+void Tree::inOrder(Node *root){
+	if(root!=NIL){
+		inOrder(root->left);
+		cout<<root->data<<'-'<<root->colour<<' ';
+		inOrder(root->right);
 	}
-	else if(z->right == t->NIL) {
-  		x = z->left;
-  		rb_transplant(t, z, z->left);
-	}
-	else {
-  		y = minimum(t, z->right);
-  		y_orignal_color = y->color;
-  		x = y->right;
-  		if(y->parent == z) {
-    		x->parent = z;
-  		}
-  		else {
-    		rb_transplant(t, y, y->right);
-    		y->right = z->right;
-    		y->right->parent = y;
-  		}
-  	
-  		rb_transplant(t, z, y);
-  		y->left = z->left;
-  		y->left->parent = y;
-  		y->color = z->color;
-	}
-	if(y_orignal_color == "black")
-  		rb_delete_fixup(t, x);
-}
-
-void RBT::rb_delete_fixup(RBT *t, Node *x) {
-	while(x != t->root && x->color == "black") {
-  		if(x == x->parent->left) {
-    		Node *w = x->parent->right;
-    		if(w->color == "red") {
-      			w->color = "black";
-      			x->parent->color = "red";
-      			left_rotate(t, x->parent);
-      			w = x->parent->right;
-    		}
-    		if(w->left->color == "black" && w->right->color == "black") {
-      			w->color = "red";
-      			x = x->parent;
-    		}
-    		else {
-      			if(w->right->color == "black") {
-      			  	w->left->color = "black";
-      			  	w->color = "red";
-      			  	right_rotate(t, w);
-      			  	w = x->parent->right;
-      			}
-      			w->color = x->parent->color;
-      			x->parent->color = "black";
-      			w->right->color = "black";
-      			left_rotate(t, x->parent);
-      			x = t->root;
-    		}
-  		}
-  		else {
-    		Node *w = x->parent->left;
-    		if(w->color == "red") {
-      			w->color = "black";
-      			x->parent->color = "red";
-      			right_rotate(t, x->parent);
-      			w = x->parent->left;
-    		}
-    		if(w->right->color == "black" && w->left->color == "black") {
-      			w->color = "red";
-      			x = x->parent;
-    		}
-    		else{
-      			if(w->left->color == "black") {
-        			w->right->color = "black";
-        			w->color = "red";
-        			left_rotate(t, w);
-        			w = x->parent->left;
-      			}
-      			w->color = x->parent->color;
-      			x->parent->color = "black";
-      			w->left->color = "black";
-      			right_rotate(t, x->parent);
-      			x = t->root;
-    		}
-  		}
-	}
-	x->color = "black";
 }
 
 #endif
-

@@ -54,9 +54,10 @@ public:
 	Node* successorNode(Tree *t, Node *x);
 
 	void deleteArrange(Tree *t,Node *x);
+	
 	void left_rotate(Tree *t, Node *x);
 	void right_rotate(Tree *t, Node *x);
-	void rb_transplant(Tree *t, Node *u, Node *v);
+	//void rb_transplant(Tree *t, Node *u, Node *v);
 
 };
 
@@ -83,22 +84,25 @@ Node* Tree::insertLeaf(Tree *t,Node *root,Node *node){
 }
 
 Node* Tree::searchNode(Tree* t,Node* root, int value){
-	Node *pCur;
-
-	if(root == t->NIL){
-		
-		pCur = t->NIL;
-	}
-
-	else{
-		if(value == root->data)
-			pCur = root;
-		else if(value < root->data)
-			pCur = searchNode(t,root->left,value);
-		else if(value > root->data)
-			pCur = searchNode(t,root->right,value);
-	}
-	return pCur;
+	Node *pCur = root;
+  while (pCur != t->NIL) {
+    if (value < pCur->data) {
+      if (pCur->left == t->NIL)
+        break;
+      else
+        pCur = pCur->left;
+    } 
+    else if (value == pCur->data) {
+      break;
+    } 
+    else {
+      if (pCur->right == t->NIL)
+        break;
+      else
+        pCur = pCur->right;
+    }
+  }
+  return pCur;
 }
 
 Node* Tree::rotateLeftRight(Node *root){
@@ -263,7 +267,7 @@ Node* Tree::arrangeNode(Tree *t,Node *root,int value){//root is middle node in C
 
 }
 
-void Tree::rb_transplant(Tree *t, Node *u, Node *v) {
+/*void Tree::rb_transplant(Tree *t, Node *u, Node *v) {
 	if(u->parent == t->NIL)
 	  t->leaf = v;
 	else if(u == u->parent->left)
@@ -271,7 +275,7 @@ void Tree::rb_transplant(Tree *t, Node *u, Node *v) {
 	else
 	  u->parent->right = v;
 	v->parent = u->parent;
-}
+}*/
 
 Node* Tree::successorNode(Tree *t, Node *x) {
 	while(x->right != t->NIL)
@@ -280,40 +284,37 @@ Node* Tree::successorNode(Tree *t, Node *x) {
 }
 
 void Tree::deleteNode(Tree *t, Node *z) {
-	
-	Node *y = z;
+	Node *y;
+	if(z->left == t->NIL || z->right ==t->NIL)
+		y=z;
+	else
+		y = t->successorNode(t,z);
+
 	Node *x;
-	string y_orignal_color = y->colour;
 
-	if(z->left == t->NIL) {
-  		x = z->right;
-  		rb_transplant(t, z, z->right);
-	}
-	else if(z->right == t->NIL) {
-  		x = z->left;
-  		rb_transplant(t, z, z->left);
-	}
-	else {
-  		y = successorNode(t, z->right);
-  		y_orignal_color = y->colour;
-  		x = y->right;
-  		if(y->parent == z) {
-    		x->parent = z;
-  		}
-  		else {
-    		rb_transplant(t, y, y->right);
-    		y->right = z->right;
-    		y->right->parent = y;
-  		}
-  		
-  		rb_transplant(t, z, y);
-  		y->left = z->left;
-  		y->left->parent = y;
-  		y->colour = z->colour;
+	if(y->left !=t->NIL)
+		x = y->left;
+	else
+		x = y->right;
 
+	x->parent = y->parent;
+
+	if(y->parent == t->NIL)
+		t->leaf = x;
+	else{ 
+		if(y == y->parent->left)
+			y->parent->left =x;
+		else
+			y->parent->right =x;
 	}
-	if(y_orignal_color == "black")
-  		deleteArrange(t, x);
+
+	if(y!=z)
+		z->data = y->data;
+
+	if(y->colour =="black"){
+		t->deleteArrange(t,x);
+	}
+
 }
 
 void Tree::deleteArrange(Tree *t,Node *x){
@@ -345,7 +346,7 @@ void Tree::deleteArrange(Tree *t,Node *x){
       			x = t->leaf;
     		}
   		}
-  		else {
+  		else if(x == x->parent->right){
     		Node *w = x->parent->left;
     		if(w->colour == "red") {
       			w->colour = "black";
@@ -370,6 +371,10 @@ void Tree::deleteArrange(Tree *t,Node *x){
       			right_rotate(t, x->parent);
       			x = t->leaf;
     		}
+  		}
+  		else{
+
+  			break;
   		}
 	}
 	x->colour = "black";
