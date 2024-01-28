@@ -8,11 +8,31 @@ Image block;
 
 Image background;
 
+Image star;
+
 vector<Image *> snake;
 
 int xLast=0,yLast = 0;
 
+int xStar = 0,yStar = 0;
+
 int blockWidth = 0;
+int coutSelect =6;
+bool inRun = false;
+
+bool hitStar(SDL_Rect head,SDL_Rect des){
+
+    if(des.x>= head.x && des.x<=(head.x+head.w)
+        &&des.y>= head.y && des.y<=(head.y+head.h))
+        return true;
+    else if(des.x>= head.x && des.x<=(head.x+head.w)
+        &&(des.y+des.h)>= head.y && (des.y+des.h)<=(head.y+head.h))
+        return true;
+    else
+        return false;
+}
+
+void addSnake(int count);
 
 Uint32 blockMove(Uint32 interval, void * param){
 
@@ -21,22 +41,23 @@ Uint32 blockMove(Uint32 interval, void * param){
 		yLast = (snake.at(0))->dstrect.y;
 	}
 
-	if(block.direct == 4)
-		(snake.at(0))->dstrect.y+=10;
-	else if(block.direct == 3)
-		(snake.at(0))->dstrect.y-=10;
-	else if(block.direct == 2)
-		(snake.at(0))->dstrect.x-=10;
-	else if(block.direct == 1)
-		(snake.at(0))->dstrect.x+=10;
-
+    if(!inRun){
+	   if(block.direct == 4)
+	   	   (snake.at(0))->dstrect.y+=10;
+	   else if(block.direct == 3)
+	   	   (snake.at(0))->dstrect.y-=10;
+	   else if(block.direct == 2)
+	   	   (snake.at(0))->dstrect.x-=10;
+	   else if(block.direct == 1)
+	   	   (snake.at(0))->dstrect.x+=10;
+    }
 	
 	block.moveCount++;
 	int xTemp = 0;
 	int yTemp = 0;
 	
 	if(block.moveCount == 6){
-
+        inRun = true;
 		for(int i=1;i<snake.size();i++){
 			
 				xTemp = (snake.at(i))->dstrect.x;
@@ -51,13 +72,36 @@ Uint32 blockMove(Uint32 interval, void * param){
 		}
 
 		mainRender = background.setRenderBitmap(mainRender,background.dstrect);
+        mainRender = star.setRenderBitmap(mainRender,star.dstrect);
 
 		for(int i=0;i<snake.size();i++){
+            if(i==0){
+                if( hitStar((snake.at(i))->dstrect,star.dstrect)||
+                    hitStar(star.dstrect,(snake.at(i))->dstrect)){
+                    coutSelect++;
+
+                    if(coutSelect ==10)
+                        coutSelect = 1;
+                    
+                    addSnake(coutSelect);
+
+                    srand(unsigned(time(0)));
+
+                    xStar = random(0,19);
+                    yStar = random(0,9);
+
+                    star.dstrect.x =xStar*blockWidth;
+                    star.dstrect.y =yStar*blockWidth;
+
+                }
+            }
+
 			mainRender = (snake.at(i))->setRenderBitmap(mainRender,(snake.at(i))->dstrect);
 		}
 
 
 		SDL_RenderPresent(mainRender);
+        inRun = false;
 	}
 
     return interval;
@@ -129,7 +173,7 @@ int main(int argc, char *argv[])
 
     Image *sHead = &block;
     
-    Image *sNext = new Image;
+    /*Image *sNext = new Image;
 
     sNext->getLoadBitmap("res//score//7.bmp");
     sNext->dstrect.x = sHead->dstrect.x;
@@ -143,11 +187,11 @@ int main(int argc, char *argv[])
     sThird->dstrect.x = sHead->dstrect.x;
     sThird->dstrect.y = sNext->dstrect.y - blockWidth;
     sThird->dstrect.w = blockWidth;
-    sThird->dstrect.h = blockWidth;
+    sThird->dstrect.h = blockWidth;*/
 
     snake.push_back(sHead);
-    snake.push_back(sNext);
-    snake.push_back(sThird);
+    //snake.push_back(sNext);
+    //snake.push_back(sThird);
     
     //set background width and high
     //Image background;
@@ -166,13 +210,23 @@ int main(int argc, char *argv[])
     background.bmpRect.y = background.dstrect.y = 0;
     background.bmpRect.w = background.dstrect.w = backgroundWidth;//background.width;
     background.bmpRect.h = background.dstrect.h = backgroundHigh;//background.high;
- 
+    //
+    xStar = random(0,19);
+    yStar = random(0,9);
+    
+    star.getLoadBitmap("res//score//star.bmp");
+
+    star.dstrect.x =xStar*blockWidth;
+    star.dstrect.y =yStar*blockWidth;
+    star.dstrect.w = blockWidth;
+    star.dstrect.h = blockWidth;
+
     // creates a renderer to render our images
     mainRender = pWin.getWindow();
 
     //
     mainRender = background.setRenderBitmap(mainRender,background.dstrect);
-
+    mainRender = star.setRenderBitmap(mainRender,star.dstrect);
     mainRender = block.setRenderBitmap(mainRender,block.dstrect);
 
     //
@@ -184,18 +238,17 @@ int main(int argc, char *argv[])
 
     blockMoveTimer =  SDL_AddTimer(50,blockMove,NULL);
     //
-
-    int coutSelect =1;
     //
     int close = 0; 
     //
 
+    //
     while (!close) {
 
     	if(block.dstrect.y >=backgroundHigh
     		|| block.dstrect.x >=backgroundWidth
-    		|| block.dstrect.y <0
-    		|| block.dstrect.x <0)
+    		|| block.dstrect.y < (0- blockWidth)
+    		|| block.dstrect.x < (0- blockWidth ))
     		SDL_RemoveTimer(blockMoveTimer);
 
     	if(block.moveCount >=6)
@@ -242,11 +295,12 @@ int main(int argc, char *argv[])
 
                 case SDL_SCANCODE_SPACE:
 
-                	addSnake(coutSelect);
-                	coutSelect++;
+                    coutSelect++;
 
                 	if(coutSelect ==10)
                 		coutSelect = 1;
+
+                    addSnake(coutSelect);
 
                 	break;
 
